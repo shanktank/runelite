@@ -34,8 +34,8 @@ import net.runelite.api.Player;
 @Singleton
 public class PlayerIndicatorsService
 {
-	private final Client client;
-	private final PlayerIndicatorsConfig config;
+	public final Client client;
+	public final PlayerIndicatorsConfig config;
 
 	@Inject
 	private PlayerIndicatorsService(Client client, PlayerIndicatorsConfig config)

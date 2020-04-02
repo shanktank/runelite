@@ -42,17 +42,11 @@ import javax.swing.SwingUtilities;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.ChatMessageType;
-import net.runelite.api.Client;
-import net.runelite.api.GameState;
-import net.runelite.api.Player;
-import net.runelite.api.Point;
-import net.runelite.api.SpriteID;
-import net.runelite.api.events.ChatMessage;
-import net.runelite.api.events.GameTick;
-import net.runelite.api.events.PlayerDeath;
-import net.runelite.api.events.WidgetLoaded;
+import net.runelite.api.*;
+import net.runelite.api.events.*;
 import net.runelite.api.widgets.Widget;
+
+import static java.util.regex.Pattern.quote;
 import static net.runelite.api.widgets.WidgetID.BARROWS_REWARD_GROUP_ID;
 import static net.runelite.api.widgets.WidgetID.CHAMBERS_OF_XERIC_REWARD_GROUP_ID;
 import static net.runelite.api.widgets.WidgetID.CLUE_SCROLL_REWARD_GROUP_ID;
@@ -64,6 +58,8 @@ import static net.runelite.api.widgets.WidgetID.THEATRE_OF_BLOOD_REWARD_GROUP_ID
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.Notifier;
 import static net.runelite.client.RuneLite.SCREENSHOT_DIR;
+
+import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.PlayerLootReceived;
@@ -112,6 +108,9 @@ public class ScreenshotPlugin extends Plugin
 	private Integer theatreOfBloodNumber;
 
 	private boolean shouldTakeScreenshot;
+
+	private Pattern usernameMatcher = null;
+	private boolean shouldNotify = true;
 
 	@Inject
 	private ScreenshotConfig config;
@@ -167,6 +166,18 @@ public class ScreenshotPlugin extends Plugin
 	ScreenshotConfig getConfig(ConfigManager configManager)
 	{
 		return configManager.getConfig(ScreenshotConfig.class);
+	}
+
+	@Subscribe
+	public void onGameStateChanged(GameStateChanged event)
+	{
+		switch (event.getGameState())
+		{
+			case LOGIN_SCREEN:
+			case HOPPING:
+				usernameMatcher = null;
+				break;
+		}
 	}
 
 	@Override
@@ -270,9 +281,24 @@ public class ScreenshotPlugin extends Plugin
 	@Subscribe
 	public void onChatMessage(ChatMessage event)
 	{
-		if (event.getType() != ChatMessageType.GAMEMESSAGE && event.getType() != ChatMessageType.SPAM && event.getType() != ChatMessageType.TRADE)
-		{
+		if(event.getType() != ChatMessageType.GAMEMESSAGE && event.getType() != ChatMessageType.SPAM && event.getType() != ChatMessageType.TRADE) {
 			return;
+		} else {
+			if(usernameMatcher == null && client.getLocalPlayer() != null && client.getLocalPlayer().getName() != null) {
+				String username = client.getLocalPlayer().getName();
+				usernameMatcher = Pattern.compile("\\b(" + quote(username) + ")\\b", Pattern.CASE_INSENSITIVE);
+			}
+			if(config.screenshotMentions() && usernameMatcher != null) {
+				Matcher m = usernameMatcher.matcher(event.getMessageNode().getValue());
+				if(m.find()) {
+					String name = m.group(1);
+					String fileName = "Mention " + " (" + name + ")";
+					shouldNotify = false;
+					takeScreenshot(fileName, "Mentions");
+					shouldNotify = true;
+				}
+			}
+			log.debug(event.getType().toString());
 		}
 
 		String chatMessage = event.getMessage();
@@ -368,11 +394,9 @@ public class ScreenshotPlugin extends Plugin
 			}
 		}
 
-		if (config.screenshotDuels())
-		{
+		if (config.screenshotDuels()) {
 			Matcher m = DUEL_END_PATTERN.matcher(chatMessage);
-			if (m.find())
-			{
+			if (m.find()) {
 				String result = m.group(1);
 				String count = m.group(2);
 				String fileName = "Duel " + result + " (" + count + ")";
@@ -591,7 +615,7 @@ public class ScreenshotPlugin extends Plugin
 
 		// Draw the game onto the screenshot
 		graphics.drawImage(image, gameOffsetX, gameOffsetY, null);
-		imageCapture.takeScreenshot(screenshot, fileName, subDir, config.notifyWhenTaken(), config.uploadScreenshot());
+		imageCapture.takeScreenshot(screenshot, fileName, subDir, config.notifyWhenTaken() && shouldNotify, config.uploadScreenshot());
 	}
 
 	@VisibleForTesting

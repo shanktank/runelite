@@ -201,6 +201,17 @@ public interface RuneLiteConfig extends Config
 	}
 
 	@ConfigItem(
+			keyName = "mentionNotificationFocused",
+			name = "Send mention notifications when focused",
+			description = "Toggles mention notifications for when the client is focused",
+			position = 26
+	)
+	default boolean sendMentionNotificationWhenFocused()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 		keyName = "fontType",
 		name = "Dynamic Overlay Font",
 		description = "Configures what font type is used for in-game overlays such as player name, ground items, etc.",
