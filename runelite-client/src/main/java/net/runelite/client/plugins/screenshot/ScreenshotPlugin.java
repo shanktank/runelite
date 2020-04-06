@@ -33,6 +33,10 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
+// TODO: begin
+import java.util.EnumSet;
+import java.util.Set;
+// TODO: end
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -109,8 +113,10 @@ public class ScreenshotPlugin extends Plugin
 
 	private boolean shouldTakeScreenshot;
 
+	// TODO: begin
 	private Pattern usernameMatcher = null;
 	private boolean shouldNotify = true;
+	// TODO: end
 
 	@Inject
 	private ScreenshotConfig config;
@@ -168,6 +174,7 @@ public class ScreenshotPlugin extends Plugin
 		return configManager.getConfig(ScreenshotConfig.class);
 	}
 
+	// TODO: begin
 	@Subscribe
 	public void onGameStateChanged(GameStateChanged event)
 	{
@@ -179,6 +186,7 @@ public class ScreenshotPlugin extends Plugin
 				break;
 		}
 	}
+	// TODO: end
 
 	@Override
 	protected void startUp() throws Exception
@@ -282,24 +290,29 @@ public class ScreenshotPlugin extends Plugin
 	public void onChatMessage(ChatMessage event)
 	{
 		// TODO: begin
-		if(event.getType() != ChatMessageType.GAMEMESSAGE && event.getType() != ChatMessageType.SPAM && event.getType() != ChatMessageType.TRADE) {
+		ChatMessageType eventType = event.getType();
+		if(eventType == ChatMessageType.MODCHAT || eventType == ChatMessageType.PUBLICCHAT || eventType == ChatMessageType.FRIENDSCHAT ||
+				eventType == ChatMessageType.AUTOTYPER ||  eventType == ChatMessageType.MODAUTOTYPER ||
+				eventType == ChatMessageType.PLAYERRELATED || eventType == ChatMessageType.TENSECTIMEOUT) {
 			if(usernameMatcher == null && client.getLocalPlayer() != null && client.getLocalPlayer().getName() != null) {
-				String username = client.getLocalPlayer().getName();
-				usernameMatcher = Pattern.compile("\\b(" + quote(username) + ")\\b", Pattern.CASE_INSENSITIVE);
+				usernameMatcher = Pattern.compile("\\b(" + quote(client.getLocalPlayer().getName()) + ")\\b", Pattern.CASE_INSENSITIVE);
 			}
 			if(config.screenshotMentions() && usernameMatcher != null) {
 				Matcher m = usernameMatcher.matcher(event.getMessageNode().getValue());
 				if(m.find()) {
-					String name = m.group(1);
 					String fileName = "Mention " + " (" + m.group(1) + ")";
 					shouldNotify = false;
 					takeScreenshot(fileName, "Mentions");
 					shouldNotify = true;
 				}
 			}
-			log.debug(event.getType().toString());
+			log.debug(eventType.toString());
 		}
 		// TODO: end
+
+		if(eventType != ChatMessageType.GAMEMESSAGE && eventType != ChatMessageType.SPAM && eventType != ChatMessageType.TRADE) {
+			return;
+		}
 
 		String chatMessage = event.getMessage();
 
