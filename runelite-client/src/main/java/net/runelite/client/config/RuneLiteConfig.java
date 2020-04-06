@@ -200,6 +200,7 @@ public interface RuneLiteConfig extends Config
 		return false;
 	}
 
+	// TODO: begin
 	@ConfigItem(
 			keyName = "mentionNotificationFocused",
 			name = "Send mention notifications when focused",
@@ -210,6 +211,7 @@ public interface RuneLiteConfig extends Config
 	{
 		return false;
 	}
+	// TODO: end
 
 	@ConfigItem(
 		keyName = "fontType",

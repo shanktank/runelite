@@ -281,9 +281,8 @@ public class ScreenshotPlugin extends Plugin
 	@Subscribe
 	public void onChatMessage(ChatMessage event)
 	{
+		// TODO: begin
 		if(event.getType() != ChatMessageType.GAMEMESSAGE && event.getType() != ChatMessageType.SPAM && event.getType() != ChatMessageType.TRADE) {
-			return;
-		} else {
 			if(usernameMatcher == null && client.getLocalPlayer() != null && client.getLocalPlayer().getName() != null) {
 				String username = client.getLocalPlayer().getName();
 				usernameMatcher = Pattern.compile("\\b(" + quote(username) + ")\\b", Pattern.CASE_INSENSITIVE);
@@ -292,7 +291,7 @@ public class ScreenshotPlugin extends Plugin
 				Matcher m = usernameMatcher.matcher(event.getMessageNode().getValue());
 				if(m.find()) {
 					String name = m.group(1);
-					String fileName = "Mention " + " (" + name + ")";
+					String fileName = "Mention " + " (" + m.group(1) + ")";
 					shouldNotify = false;
 					takeScreenshot(fileName, "Mentions");
 					shouldNotify = true;
@@ -300,6 +299,7 @@ public class ScreenshotPlugin extends Plugin
 			}
 			log.debug(event.getType().toString());
 		}
+		// TODO: end
 
 		String chatMessage = event.getMessage();
 
@@ -615,7 +615,9 @@ public class ScreenshotPlugin extends Plugin
 
 		// Draw the game onto the screenshot
 		graphics.drawImage(image, gameOffsetX, gameOffsetY, null);
+		// TODO: begin
 		imageCapture.takeScreenshot(screenshot, fileName, subDir, config.notifyWhenTaken() && shouldNotify, config.uploadScreenshot());
+		// TODO: end
 	}
 
 	@VisibleForTesting

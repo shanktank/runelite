@@ -198,6 +198,7 @@ public interface ScreenshotConfig extends Config
 		return false;
 	}
 
+	// TODO: begin
 	@ConfigItem(
 			keyName = "mentions",
 			name = "Screenshot Mentions",
@@ -208,6 +209,7 @@ public interface ScreenshotConfig extends Config
 	{
 		return true;
 	}
+	// TODO: end
 
 	@ConfigItem(
 		keyName = "hotkey",

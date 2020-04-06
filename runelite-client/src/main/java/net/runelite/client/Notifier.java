@@ -155,6 +155,7 @@ public class Notifier
 	{
 		eventBus.post(new NotificationFired(message, type));
 
+		// TODO: begin
 		// check if message == playerName?
 		// check MessageType?
 		//if (!runeLiteConfig.sendNotificationsWhenFocused() && clientUI.isFocused())
@@ -162,6 +163,7 @@ public class Notifier
 		{
 			return;
 		}
+		// TODO: end
 
 		if (runeLiteConfig.requestFocusOnNotification())
 		{
