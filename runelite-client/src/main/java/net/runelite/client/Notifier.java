@@ -162,22 +162,19 @@ public class Notifier
 		// TODO: begin
 		if(type == TrayIcon.MessageType.NONE && runeLiteConfig.sendMentionNotificationWhenFocused()) {
 			Pattern usernameMatcher = null;
-			if(client.getLocalPlayer() != null && client.getLocalPlayer().getName() != null) {
+			if (client.getLocalPlayer() != null && client.getLocalPlayer().getName() != null) {
 				usernameMatcher = Pattern.compile("\\b(" + quote(client.getLocalPlayer().getName()) + ")\\b", Pattern.CASE_INSENSITIVE);
-			}
-
-			Matcher m = usernameMatcher.matcher(message);
-			if(m.find()) {
-				switch (runeLiteConfig.notificationSound())
-				{
-					case NATIVE:
-						Toolkit.getDefaultToolkit().beep();
-						break;
-					case CUSTOM:
-						executorService.submit(this::playCustomSound);
+				Matcher m = usernameMatcher.matcher(message);
+				if (m.find()) {
+					switch (runeLiteConfig.notificationSound()) {
+						case NATIVE:
+							Toolkit.getDefaultToolkit().beep();
+							break;
+						case CUSTOM:
+							executorService.submit(this::playCustomSound);
+					}
+					log.debug("[DEV] Notifier.m.group(1): " + m.group(1));
 				}
-
-				log.debug("[DEV] Notifier.m.group(1): " + m.group(1));
 			}
 		}
 
