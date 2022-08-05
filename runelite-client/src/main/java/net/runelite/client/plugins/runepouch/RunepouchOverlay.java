@@ -33,8 +33,10 @@ import net.runelite.api.Client;
 import net.runelite.api.ItemID;
 import net.runelite.api.Point;
 import net.runelite.api.Varbits;
+import net.runelite.api.annotations.Varbit;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.game.ItemManager;
+import net.runelite.client.game.RunepouchRune;
 import static net.runelite.client.plugins.runepouch.config.RunePouchOverlayMode.BOTH;
 import static net.runelite.client.plugins.runepouch.config.RunePouchOverlayMode.MOUSE_HOVER;
 import net.runelite.client.ui.FontManager;
@@ -46,12 +48,10 @@ import net.runelite.client.util.ColorUtil;
 
 public class RunepouchOverlay extends WidgetItemOverlay
 {
-	private static final Varbits[] AMOUNT_VARBITS =
-	{
+	private static final int[] AMOUNT_VARBITS = {
 		Varbits.RUNE_POUCH_AMOUNT1, Varbits.RUNE_POUCH_AMOUNT2, Varbits.RUNE_POUCH_AMOUNT3
 	};
-	private static final Varbits[] RUNE_VARBITS =
-	{
+	private static final int[] RUNE_VARBITS = {
 		Varbits.RUNE_POUCH_RUNE1, Varbits.RUNE_POUCH_RUNE2, Varbits.RUNE_POUCH_RUNE3
 	};
 	private static final Dimension IMAGE_SIZE = new Dimension(11, 11);
@@ -59,22 +59,21 @@ public class RunepouchOverlay extends WidgetItemOverlay
 	private final Client client;
 	private final RunepouchConfig config;
 	private final TooltipManager tooltipManager;
+	private final ItemManager itemManager;
 
 	@Inject
-	private ItemManager itemManager;
-
-	@Inject
-	RunepouchOverlay(Client client, RunepouchConfig config, TooltipManager tooltipManager)
+	RunepouchOverlay(Client client, RunepouchConfig config, TooltipManager tooltipManager, ItemManager itemManager)
 	{
 		this.tooltipManager = tooltipManager;
 		this.client = client;
 		this.config = config;
+		this.itemManager = itemManager;
 		showOnInventory();
 		showOnBank();
 	}
 
 	@Override
-	public void renderItemOverlay(Graphics2D graphics, int itemId, WidgetItem itemWidget)
+	public void renderItemOverlay(Graphics2D graphics, int itemId, WidgetItem widgetItem)
 	{
 		if (itemId != ItemID.RUNE_POUCH && itemId != ItemID.RUNE_POUCH_L)
 		{
@@ -85,22 +84,21 @@ public class RunepouchOverlay extends WidgetItemOverlay
 
 		graphics.setFont(FontManager.getRunescapeSmallFont());
 
-		Point location = itemWidget.getCanvasLocation();
+		Point location = widgetItem.getCanvasLocation();
 		StringBuilder tooltipBuilder = new StringBuilder();
 
 		for (int i = 0; i < AMOUNT_VARBITS.length; i++)
 		{
-			Varbits amountVarbit = AMOUNT_VARBITS[i];
-
-			int amount = client.getVar(amountVarbit);
+			@Varbit int amountVarbit = AMOUNT_VARBITS[i];
+			int amount = client.getVarbitValue(amountVarbit);
 			if (amount <= 0)
 			{
 				continue;
 			}
 
-			Varbits runeVarbit = RUNE_VARBITS[i];
-			int runeId = client.getVar(runeVarbit);
-			Runes rune = Runes.getRune(runeId);
+			@Varbit int runeVarbit = RUNE_VARBITS[i];
+			int runeId = client.getVarbitValue(runeVarbit);
+			RunepouchRune rune = RunepouchRune.getRune(runeId);
 			if (rune == null)
 			{
 				continue;
@@ -108,7 +106,7 @@ public class RunepouchOverlay extends WidgetItemOverlay
 
 			tooltipBuilder
 				.append(amount)
-				.append(" ")
+				.append(' ')
 				.append(ColorUtil.wrapWithColorTag(rune.getName(), Color.YELLOW))
 				.append("</br>");
 
@@ -142,14 +140,14 @@ public class RunepouchOverlay extends WidgetItemOverlay
 		String tooltip = tooltipBuilder.toString();
 
 		if (!tooltip.isEmpty()
-			&& itemWidget.getCanvasBounds().contains(client.getMouseCanvasPosition().getX(), client.getMouseCanvasPosition().getY())
+			&& widgetItem.getCanvasBounds().contains(client.getMouseCanvasPosition().getX(), client.getMouseCanvasPosition().getY())
 			&& (config.runePouchOverlayMode() == MOUSE_HOVER || config.runePouchOverlayMode() == BOTH))
 		{
 			tooltipManager.add(new Tooltip(tooltip));
 		}
 	}
 
-	private BufferedImage getRuneImage(Runes rune)
+	private BufferedImage getRuneImage(RunepouchRune rune)
 	{
 		BufferedImage runeImg = rune.getImage();
 		if (runeImg != null)

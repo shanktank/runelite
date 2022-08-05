@@ -64,7 +64,7 @@ class TargetWeaknessOverlay extends Overlay
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		final List<NPC> targets = plugin.getHighlightedTargets();
+		final List<NPC> targets = plugin.getTargets();
 
 		if (targets.isEmpty() || !config.weaknessPrompt())
 		{
@@ -106,7 +106,7 @@ class TargetWeaknessOverlay extends Overlay
 			return -1;
 		}
 
-		final int healthScale = target.getHealth();
+		final int healthScale = target.getHealthScale();
 		final int healthRatio = target.getHealthRatio();
 		final Integer maxHealth = npcManager.getHealth(target.getId());
 

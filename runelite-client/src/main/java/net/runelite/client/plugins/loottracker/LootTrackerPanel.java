@@ -26,6 +26,7 @@
 package net.runelite.client.plugins.loottracker;
 
 import static com.google.common.collect.Iterables.concat;
+import com.google.common.collect.Lists;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -33,10 +34,12 @@ import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -62,7 +65,6 @@ import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.QuantityFormatter;
 import net.runelite.client.util.SwingUtil;
 import net.runelite.http.api.loottracker.LootRecordType;
-import net.runelite.http.api.loottracker.LootTrackerClient;
 
 class LootTrackerPanel extends PluginPanel
 {
@@ -85,10 +87,12 @@ class LootTrackerPanel extends PluginPanel
 
 	private static final String HTML_LABEL_TEMPLATE =
 		"<html><body style='color:%s'>%s<span style='color:white'>%s</span></body></html>";
-	private static final String SYNC_RESET_ALL_WARNING_TEXT =
-		"This will permanently delete the current loot from both the client and the RuneLite website.";
-	private static final String NO_SYNC_RESET_ALL_WARNING_TEXT =
-		"This will permanently delete the current loot from the client.";
+	private static final String RESET_ALL_WARNING_TEXT =
+		"<html>This will permanently delete <b>all</b> loot.</html>";
+	private static final String RESET_CURRENT_WARNING_TEXT =
+		"This will permanently delete \"%s\" loot.";
+	private static final String RESET_ONE_WARNING_TEXT =
+		"This will delete one kill.";
 
 	// When there is no loot, display this
 	private final PluginErrorPanel errorPanel = new PluginErrorPanel();
@@ -97,13 +101,13 @@ class LootTrackerPanel extends PluginPanel
 	private final JPanel logsContainer = new JPanel();
 
 	// Handle overall session data
-	private final JPanel overallPanel = new JPanel();
+	private final JPanel overallPanel;
 	private final JLabel overallKillsLabel = new JLabel();
 	private final JLabel overallGpLabel = new JLabel();
 	private final JLabel overallIcon = new JLabel();
 
 	// Details and navigation
-	private final JPanel actionsContainer = new JPanel();
+	private final JPanel actionsPanel;
 	private final JLabel detailsTitle = new JLabel();
 	private final JButton backBtn = new JButton();
 	private final JToggleButton viewHiddenBtn = new JToggleButton();
@@ -128,13 +132,13 @@ class LootTrackerPanel extends PluginPanel
 
 	static
 	{
-		final BufferedImage singleLootImg = ImageUtil.getResourceStreamFromClass(LootTrackerPlugin.class, "single_loot_icon.png");
-		final BufferedImage groupedLootImg = ImageUtil.getResourceStreamFromClass(LootTrackerPlugin.class, "grouped_loot_icon.png");
-		final BufferedImage backArrowImg = ImageUtil.getResourceStreamFromClass(LootTrackerPlugin.class, "back_icon.png");
-		final BufferedImage visibleImg = ImageUtil.getResourceStreamFromClass(LootTrackerPlugin.class, "visible_icon.png");
-		final BufferedImage invisibleImg = ImageUtil.getResourceStreamFromClass(LootTrackerPlugin.class, "invisible_icon.png");
-		final BufferedImage collapseImg = ImageUtil.getResourceStreamFromClass(LootTrackerPlugin.class, "collapsed.png");
-		final BufferedImage expandedImg = ImageUtil.getResourceStreamFromClass(LootTrackerPlugin.class, "expanded.png");
+		final BufferedImage singleLootImg = ImageUtil.loadImageResource(LootTrackerPlugin.class, "single_loot_icon.png");
+		final BufferedImage groupedLootImg = ImageUtil.loadImageResource(LootTrackerPlugin.class, "grouped_loot_icon.png");
+		final BufferedImage backArrowImg = ImageUtil.loadImageResource(LootTrackerPlugin.class, "back_icon.png");
+		final BufferedImage visibleImg = ImageUtil.loadImageResource(LootTrackerPlugin.class, "visible_icon.png");
+		final BufferedImage invisibleImg = ImageUtil.loadImageResource(LootTrackerPlugin.class, "invisible_icon.png");
+		final BufferedImage collapseImg = ImageUtil.loadImageResource(LootTrackerPlugin.class, "collapsed.png");
+		final BufferedImage expandedImg = ImageUtil.loadImageResource(LootTrackerPlugin.class, "expanded.png");
 
 		SINGLE_LOOT_VIEW = new ImageIcon(singleLootImg);
 		SINGLE_LOOT_VIEW_FADED = new ImageIcon(ImageUtil.alphaOffset(singleLootImg, -180));
@@ -173,6 +177,28 @@ class LootTrackerPanel extends PluginPanel
 		layoutPanel.setLayout(new BoxLayout(layoutPanel, BoxLayout.Y_AXIS));
 		add(layoutPanel, BorderLayout.NORTH);
 
+		actionsPanel = buildActionsPanel();
+		overallPanel = buildOverallPanel();
+
+		// Create loot boxes wrapper
+		logsContainer.setLayout(new BoxLayout(logsContainer, BoxLayout.Y_AXIS));
+		layoutPanel.add(actionsPanel);
+		layoutPanel.add(overallPanel);
+		layoutPanel.add(logsContainer);
+
+		// Add error pane
+		errorPanel.setContent("Loot tracker", "You have not received any loot yet.");
+		add(errorPanel);
+	}
+
+	/**
+	 * The actions panel includes the back/title label for the current view,
+	 * as well as the view controls panel which includes hidden, single/grouped, and
+	 * collapse buttons.
+	 */
+	private JPanel buildActionsPanel()
+	{
+		final JPanel actionsContainer = new JPanel();
 		actionsContainer.setLayout(new BorderLayout());
 		actionsContainer.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		actionsContainer.setPreferredSize(new Dimension(0, 30));
@@ -185,7 +211,7 @@ class LootTrackerPanel extends PluginPanel
 		SwingUtil.removeButtonDecorations(collapseBtn);
 		collapseBtn.setIcon(EXPAND_ICON);
 		collapseBtn.setSelectedIcon(COLLAPSE_ICON);
-		SwingUtil.addModalTooltip(collapseBtn, "Collapse All", "Un-Collapse All");
+		SwingUtil.addModalTooltip(collapseBtn, "Expand All", "Collapse All");
 		collapseBtn.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		collapseBtn.setUI(new BasicButtonUI()); // substance breaks the layout
 		collapseBtn.addActionListener(ev -> changeCollapse());
@@ -250,7 +276,13 @@ class LootTrackerPanel extends PluginPanel
 		actionsContainer.add(viewControls, BorderLayout.EAST);
 		actionsContainer.add(leftTitleContainer, BorderLayout.WEST);
 
+		return actionsContainer;
+	}
+
+	private JPanel buildOverallPanel()
+	{
 		// Create panel that will contain overall data
+		final JPanel overallPanel = new JPanel();
 		overallPanel.setBorder(BorderFactory.createCompoundBorder(
 			BorderFactory.createMatteBorder(5, 0, 0, 0, ColorScheme.DARK_GRAY_COLOR),
 			BorderFactory.createEmptyBorder(8, 10, 8, 10)
@@ -275,10 +307,8 @@ class LootTrackerPanel extends PluginPanel
 		final JMenuItem reset = new JMenuItem("Reset All");
 		reset.addActionListener(e ->
 		{
-			final LootTrackerClient client = plugin.getLootTrackerClient();
-			final boolean syncLoot = client != null && config.syncPanel();
 			final int result = JOptionPane.showOptionDialog(overallPanel,
-				syncLoot ? SYNC_RESET_ALL_WARNING_TEXT : NO_SYNC_RESET_ALL_WARNING_TEXT,
+				currentView == null ? RESET_ALL_WARNING_TEXT : String.format(RESET_CURRENT_WARNING_TEXT, currentView),
 				"Are you sure?", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
 				null, new String[]{"Yes", "No"}, "No");
 
@@ -293,12 +323,17 @@ class LootTrackerPanel extends PluginPanel
 			boxes.removeIf(b -> b.matches(currentView, currentType));
 			updateOverall();
 			logsContainer.removeAll();
-			logsContainer.repaint();
+			logsContainer.revalidate();
 
 			// Delete all loot, or loot matching the current view
-			if (syncLoot)
+			if (currentView != null)
 			{
-				client.delete(currentView);
+				assert currentType != null;
+				plugin.removeLootConfig(currentType, currentView);
+			}
+			else
+			{
+				plugin.removeAllLoot();
 			}
 		});
 
@@ -308,15 +343,7 @@ class LootTrackerPanel extends PluginPanel
 		popupMenu.add(reset);
 		overallPanel.setComponentPopupMenu(popupMenu);
 
-		// Create loot boxes wrapper
-		logsContainer.setLayout(new BoxLayout(logsContainer, BoxLayout.Y_AXIS));
-		layoutPanel.add(actionsContainer);
-		layoutPanel.add(overallPanel);
-		layoutPanel.add(logsContainer);
-
-		// Add error pane
-		errorPanel.setContent("Loot tracker", "You have not received any loot yet.");
-		add(errorPanel);
+		return overallPanel;
 	}
 
 	void updateCollapseText()
@@ -341,7 +368,7 @@ class LootTrackerPanel extends PluginPanel
 	 * Creates a subtitle, adds a new entry and then passes off to the render methods, that will decide
 	 * how to display this new data.
 	 */
-	void add(final String eventName, final LootRecordType type, final int actorLevel, LootTrackerItem[] items)
+	void add(final String eventName, final LootRecordType type, final int actorLevel, LootTrackerItem[] items, int kills)
 	{
 		final String subTitle;
 		if (type == LootRecordType.PICKPOCKET)
@@ -352,8 +379,13 @@ class LootTrackerPanel extends PluginPanel
 		{
 			subTitle = actorLevel > -1 ? "(lvl-" + actorLevel + ")" : "";
 		}
-		final LootTrackerRecord record = new LootTrackerRecord(eventName, subTitle, type, items, 1);
+		final LootTrackerRecord record = new LootTrackerRecord(eventName, subTitle, type, items, kills);
 		sessionRecords.add(record);
+
+		if (hideIgnoredItems && plugin.isEventIgnored(eventName))
+		{
+			return;
+		}
 
 		LootTrackerBox box = buildBox(record);
 		if (box != null)
@@ -361,6 +393,14 @@ class LootTrackerPanel extends PluginPanel
 			box.rebuild();
 			updateOverall();
 		}
+	}
+
+	/**
+	 * Clear all records in the panel
+	 */
+	void clearRecords()
+	{
+		aggregateRecords.clear();
 	}
 
 	/**
@@ -450,21 +490,21 @@ class LootTrackerPanel extends PluginPanel
 		}
 		else
 		{
-			int start = 0;
-			if (sessionRecords.size() > MAX_LOOT_BOXES)
-			{
-				start = sessionRecords.size() - MAX_LOOT_BOXES;
-			}
-			for (int i = start; i < sessionRecords.size(); i++)
-			{
-				buildBox(sessionRecords.get(i));
-			}
+			// Loop in reverse insertion order so limiting includes most recent data
+			Lists.reverse(sessionRecords).stream()
+				// filter records prior to limiting so that it is limited to the correct amount
+				.filter(r -> !hideIgnoredItems || !plugin.isEventIgnored(r.getTitle()))
+				.limit(MAX_LOOT_BOXES)
+				// The box that is built last is first inside the UI.
+				// since we are looping in reverse order we need to use a data type that support reverse iterating
+				.collect(Collectors.toCollection(ArrayDeque::new))
+				.descendingIterator()
+				.forEachRemaining(this::buildBox);
 		}
 
 		boxes.forEach(LootTrackerBox::rebuild);
 		updateOverall();
 		logsContainer.revalidate();
-		logsContainer.repaint();
 	}
 
 	/**
@@ -480,6 +520,12 @@ class LootTrackerPanel extends PluginPanel
 			return null;
 		}
 
+		final boolean isIgnored = plugin.isEventIgnored(record.getTitle());
+		if (hideIgnoredItems && isIgnored)
+		{
+			return null;
+		}
+
 		// Group all similar loot together
 		if (groupLoot)
 		{
@@ -487,6 +533,8 @@ class LootTrackerPanel extends PluginPanel
 			{
 				if (box.matches(record))
 				{
+					// float the matched box to the top of the UI list if it's not already first
+					logsContainer.setComponentZOrder(box, 0);
 					box.addKill(record);
 					return box;
 				}
@@ -495,18 +543,22 @@ class LootTrackerPanel extends PluginPanel
 
 		// Show main view
 		remove(errorPanel);
-		actionsContainer.setVisible(true);
+		actionsPanel.setVisible(true);
 		overallPanel.setVisible(true);
 
 		// Create box
 		final LootTrackerBox box = new LootTrackerBox(itemManager, record.getTitle(), record.getType(), record.getSubTitle(),
-			hideIgnoredItems, config.priceType(), config.showPriceType(), plugin::toggleItem);
+			hideIgnoredItems, config.priceType(), config.showPriceType(), plugin::toggleItem, plugin::toggleEvent, isIgnored);
 		box.addKill(record);
 
-		// Create popup menu
-		final JPopupMenu popupMenu = new JPopupMenu();
-		popupMenu.setBorder(new EmptyBorder(5, 5, 5, 5));
-		box.setComponentPopupMenu(popupMenu);
+		// Use the existing popup menu or create a new one
+		JPopupMenu popupMenu = box.getComponentPopupMenu();
+		if (popupMenu == null)
+		{
+			popupMenu = new JPopupMenu();
+			popupMenu.setBorder(new EmptyBorder(5, 5, 5, 5));
+			box.setComponentPopupMenu(popupMenu);
+		}
 
 		// Create collapse event
 		box.addMouseListener(new MouseAdapter()
@@ -533,6 +585,16 @@ class LootTrackerPanel extends PluginPanel
 		final JMenuItem reset = new JMenuItem("Reset");
 		reset.addActionListener(e ->
 		{
+			final int result = JOptionPane.showOptionDialog(box,
+				groupLoot ? String.format(RESET_CURRENT_WARNING_TEXT, box.getId()) : RESET_ONE_WARNING_TEXT,
+				"Are you sure?", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
+				null, new String[]{"Yes", "No"}, "No");
+
+			if (result != JOptionPane.YES_OPTION)
+			{
+				return;
+			}
+
 			Predicate<LootTrackerRecord> match = groupLoot
 				// With grouped loot, remove any record with this title
 				? r -> r.matches(record.getTitle(), record.getType())
@@ -543,13 +605,12 @@ class LootTrackerPanel extends PluginPanel
 			boxes.remove(box);
 			updateOverall();
 			logsContainer.remove(box);
-			logsContainer.repaint();
+			logsContainer.revalidate();
 
-			LootTrackerClient client = plugin.getLootTrackerClient();
 			// Without loot being grouped we have no way to identify single kills to be deleted
-			if (client != null && groupLoot && config.syncPanel())
+			if (groupLoot)
 			{
-				client.delete(box.getId());
+				plugin.removeLootConfig(box.getLootRecordType(), box.getId());
 			}
 		});
 
@@ -586,9 +647,20 @@ class LootTrackerPanel extends PluginPanel
 		long overallGe = 0;
 		long overallHa = 0;
 
-		for (LootTrackerRecord record : concat(aggregateRecords, sessionRecords))
+		Iterable<LootTrackerRecord> records = sessionRecords;
+		if (groupLoot)
+		{
+			records = concat(aggregateRecords, sessionRecords);
+		}
+
+		for (LootTrackerRecord record : records)
 		{
 			if (!record.matches(currentView, currentType))
+			{
+				continue;
+			}
+
+			if (hideIgnoredItems && plugin.isEventIgnored(record.getTitle()))
 			{
 				continue;
 			}

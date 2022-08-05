@@ -27,6 +27,8 @@ package net.runelite.client.plugins.worldhopper;
 
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.Collections;
+import java.util.Set;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
@@ -71,10 +73,21 @@ public interface WorldHopperConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "showSidebar",
-		name = "Show world hopper sidebar",
-		description = "Show sidebar containing all worlds that mimics in-game interface",
+		keyName = "quickHopRegionFilter",
+		name = "Quick-hop region",
+		description = "Limit quick-hopping to worlds of a specific region",
 		position = 3
+	)
+	default Set<RegionFilterMode> quickHopRegionFilter()
+	{
+		return Collections.emptySet();
+	}
+
+	@ConfigItem(
+		keyName = "showSidebar",
+		name = "Show world switcher sidebar",
+		description = "Show sidebar containing all worlds that mimics in-game interface",
+		position = 4
 	)
 	default boolean showSidebar()
 	{
@@ -85,7 +98,7 @@ public interface WorldHopperConfig extends Config
 		keyName = "ping",
 		name = "Show world ping",
 		description = "Shows ping to each game world",
-		position = 4
+		position = 5
 	)
 	default boolean ping()
 	{
@@ -96,7 +109,7 @@ public interface WorldHopperConfig extends Config
 		keyName = "showMessage",
 		name = "Show world hop message in chat",
 		description = "Shows what world is being hopped to in the chat",
-		position = 5
+		position = 6
 	)
 	default boolean showWorldHopMessage()
 	{
@@ -106,8 +119,8 @@ public interface WorldHopperConfig extends Config
 	@ConfigItem(
 		keyName = "menuOption",
 		name = "Show Hop-to menu option",
-		description = "Adds Hop-to menu option to the friends list and clan members list",
-		position = 6
+		description = "Adds Hop-to menu option to the friends list and friends chat members list",
+		position = 7
 	)
 	default boolean menuOption()
 	{
@@ -118,7 +131,7 @@ public interface WorldHopperConfig extends Config
 		keyName = "subscriptionFilter",
 		name = "Show subscription types",
 		description = "Only show free worlds, member worlds, or both types of worlds in sidebar",
-		position = 7
+		position = 8
 	)
 	default SubscriptionFilterMode subscriptionFilter()
 	{
@@ -126,10 +139,21 @@ public interface WorldHopperConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "regionFilter",
+		name = "Filter worlds by region",
+		description = "Restrict sidebar worlds to one region",
+		position = 8
+	)
+	default Set<RegionFilterMode> regionFilter()
+	{
+		return Collections.emptySet();
+	}
+
+	@ConfigItem(
 		keyName = "displayPing",
 		name = "Display current ping",
 		description = "Displays ping to current game world",
-		position = 7
+		position = 9
 	)
 	default boolean displayPing()
 	{

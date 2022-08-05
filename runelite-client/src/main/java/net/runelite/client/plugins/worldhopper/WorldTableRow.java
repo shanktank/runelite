@@ -30,6 +30,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.EnumSet;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import javax.swing.ImageIcon;
@@ -62,14 +63,15 @@ class WorldTableRow extends JPanel
 	private static final Color TOURNAMENT_WORLD = new Color(79, 145, 255);
 	private static final Color MEMBERS_WORLD = new Color(210, 193, 53);
 	private static final Color FREE_WORLD = new Color(200, 200, 200);
-	private static final Color LEAGUE_WORLD = new Color(157, 237, 1);
+	private static final Color SEASONAL_WORLD = new Color(133, 177, 178);
+	private static final Color PVP_ARENA_WORLD = new Color(144, 179, 255);
 
 	static
 	{
-		FLAG_AUS = new ImageIcon(ImageUtil.getResourceStreamFromClass(WorldHopperPlugin.class, "flag_aus.png"));
-		FLAG_UK = new ImageIcon(ImageUtil.getResourceStreamFromClass(WorldHopperPlugin.class, "flag_uk.png"));
-		FLAG_US = new ImageIcon(ImageUtil.getResourceStreamFromClass(WorldHopperPlugin.class, "flag_us.png"));
-		FLAG_GER = new ImageIcon(ImageUtil.getResourceStreamFromClass(WorldHopperPlugin.class, "flag_ger.png"));
+		FLAG_AUS = new ImageIcon(ImageUtil.loadImageResource(WorldHopperPlugin.class, "flag_aus.png"));
+		FLAG_UK = new ImageIcon(ImageUtil.loadImageResource(WorldHopperPlugin.class, "flag_uk.png"));
+		FLAG_US = new ImageIcon(ImageUtil.loadImageResource(WorldHopperPlugin.class, "flag_us.png"));
+		FLAG_GER = new ImageIcon(ImageUtil.loadImageResource(WorldHopperPlugin.class, "flag_ger.png"));
 	}
 
 	private final JMenuItem favoriteMenuOption = new JMenuItem();
@@ -78,7 +80,7 @@ class WorldTableRow extends JPanel
 	private JLabel playerCountField;
 	private JLabel activityField;
 	private JLabel pingField;
-	private BiConsumer<World, Boolean> onFavorite;
+	private final BiConsumer<World, Boolean> onFavorite;
 
 	@Getter
 	private final World world;
@@ -89,11 +91,9 @@ class WorldTableRow extends JPanel
 	private int ping;
 
 	private Color lastBackground;
-	private boolean current;
 
 	WorldTableRow(World world, boolean current, boolean favorite, Integer ping, Consumer<World> onSelect, BiConsumer<World, Boolean> onFavorite)
 	{
-		this.current = current;
 		this.world = world;
 		this.onFavorite = onFavorite;
 		this.updatedPlayerCount = world.getPlayers();
@@ -209,7 +209,12 @@ class WorldTableRow extends JPanel
 	void updatePlayerCount(int playerCount)
 	{
 		this.updatedPlayerCount = playerCount;
-		playerCountField.setText(String.valueOf(playerCount));
+		playerCountField.setText(playerCountString(playerCount));
+	}
+
+	private static String playerCountString(int playerCount)
+	{
+		return playerCount < 0 ? "OFF" : Integer.toString(playerCount);
 	}
 
 	void setPing(int ping)
@@ -244,26 +249,33 @@ class WorldTableRow extends JPanel
 			worldField.setForeground(CURRENT_WORLD);
 			return;
 		}
-		else if (world.getTypes().contains(WorldType.PVP)
-			|| world.getTypes().contains(WorldType.HIGH_RISK)
-			|| world.getTypes().contains(WorldType.DEADMAN))
+
+
+		EnumSet<WorldType> types = world.getTypes();
+		if (types.contains(WorldType.PVP)
+			|| types.contains(WorldType.HIGH_RISK)
+			|| types.contains(WorldType.DEADMAN))
 		{
 			activityField.setForeground(DANGEROUS_WORLD);
 		}
-		else if (world.getTypes().contains(WorldType.LEAGUE))
+		else if (types.contains(WorldType.SEASONAL))
 		{
-			activityField.setForeground(LEAGUE_WORLD);
+			activityField.setForeground(SEASONAL_WORLD);
 		}
-		else if (world.getTypes().contains(WorldType.TOURNAMENT))
+		else if (types.contains(WorldType.NOSAVE_MODE))
 		{
 			activityField.setForeground(TOURNAMENT_WORLD);
+		}
+		else if (types.contains(WorldType.PVP_ARENA))
+		{
+			activityField.setForeground(PVP_ARENA_WORLD);
 		}
 		else
 		{
 			activityField.setForeground(Color.WHITE);
 		}
 
-		worldField.setForeground(world.getTypes().contains(WorldType.MEMBERS) ? MEMBERS_WORLD : FREE_WORLD);
+		worldField.setForeground(types.contains(WorldType.MEMBERS) ? MEMBERS_WORLD : FREE_WORLD);
 	}
 
 	/**
@@ -274,7 +286,7 @@ class WorldTableRow extends JPanel
 		JPanel column = new JPanel(new BorderLayout());
 		column.setBorder(new EmptyBorder(0, 5, 0, 5));
 
-		playerCountField = new JLabel(world.getPlayers() + "");
+		playerCountField = new JLabel(playerCountString(world.getPlayers()));
 		playerCountField.setFont(FontManager.getRunescapeSmallFont());
 
 		column.add(playerCountField, BorderLayout.WEST);
@@ -308,8 +320,46 @@ class WorldTableRow extends JPanel
 		JPanel column = new JPanel(new BorderLayout());
 		column.setBorder(new EmptyBorder(0, 5, 0, 5));
 
-		activityField = new JLabel(world.getActivity());
+		String activity = world.getActivity();
+		activityField = new JLabel(activity);
 		activityField.setFont(FontManager.getRunescapeSmallFont());
+		if (activity != null && activity.length() > 16)
+		{
+			activityField.setToolTipText(activity);
+			// Pass up events - https://stackoverflow.com/a/14932443
+			activityField.addMouseListener(new MouseAdapter()
+			{
+				@Override
+				public void mouseClicked(MouseEvent e)
+				{
+					dispatchEvent(e);
+				}
+
+				@Override
+				public void mousePressed(MouseEvent e)
+				{
+					dispatchEvent(e);
+				}
+
+				@Override
+				public void mouseReleased(MouseEvent e)
+				{
+					dispatchEvent(e);
+				}
+
+				@Override
+				public void mouseEntered(MouseEvent e)
+				{
+					dispatchEvent(e);
+				}
+
+				@Override
+				public void mouseExited(MouseEvent e)
+				{
+					dispatchEvent(e);
+				}
+			});
+		}
 
 		column.add(activityField, BorderLayout.WEST);
 

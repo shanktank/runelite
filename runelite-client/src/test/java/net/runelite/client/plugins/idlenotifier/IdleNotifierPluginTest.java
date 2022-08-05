@@ -33,6 +33,7 @@ import net.runelite.api.AnimationID;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.Hitsplat;
+import net.runelite.api.HitsplatID;
 import net.runelite.api.NPC;
 import net.runelite.api.NPCComposition;
 import net.runelite.api.Player;
@@ -62,7 +63,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class IdleNotifierPluginTest
 {
-	private static final String PLAYER_NAME = "Deathbeam";
+	private static final int UNKNOWN_ANIMATION = -2;
 
 	@Mock
 	@Bind
@@ -116,7 +117,6 @@ public class IdleNotifierPluginTest
 		when(fishingSpot.getName()).thenReturn("Fishing spot");
 
 		// Mock player
-		when(player.getName()).thenReturn(PLAYER_NAME);
 		when(player.getAnimation()).thenReturn(AnimationID.IDLE);
 		when(client.getLocalPlayer()).thenReturn(player);
 
@@ -145,7 +145,7 @@ public class IdleNotifierPluginTest
 		when(player.getAnimation()).thenReturn(AnimationID.IDLE);
 		plugin.onAnimationChanged(animationChanged);
 		plugin.onGameTick(new GameTick());
-		verify(notifier).notify("[" + PLAYER_NAME + "] is now idle!");
+		verify(notifier).notify("You are now idle!");
 	}
 
 	@Test
@@ -156,7 +156,7 @@ public class IdleNotifierPluginTest
 		animationChanged.setActor(player);
 		plugin.onAnimationChanged(animationChanged);
 		plugin.onGameTick(new GameTick());
-		when(player.getAnimation()).thenReturn(AnimationID.LOOKING_INTO);
+		when(player.getAnimation()).thenReturn(UNKNOWN_ANIMATION);
 		plugin.onAnimationChanged(animationChanged);
 		plugin.onGameTick(new GameTick());
 		when(player.getAnimation()).thenReturn(AnimationID.IDLE);
@@ -201,7 +201,7 @@ public class IdleNotifierPluginTest
 		when(player.getInteracting()).thenReturn(null);
 		plugin.onInteractingChanged(new InteractingChanged(player, null));
 		plugin.onGameTick(new GameTick());
-		verify(notifier).notify("[" + PLAYER_NAME + "] is now out of combat!");
+		verify(notifier).notify("You are now out of combat!");
 	}
 
 	@Test
@@ -250,7 +250,7 @@ public class IdleNotifierPluginTest
 		// But player is being damaged (is in combat)
 		final HitsplatApplied hitsplatApplied = new HitsplatApplied();
 		hitsplatApplied.setActor(player);
-		hitsplatApplied.setHitsplat(new Hitsplat(Hitsplat.HitsplatType.DAMAGE_ME, 0, 0));
+		hitsplatApplied.setHitsplat(new Hitsplat(HitsplatID.DAMAGE_ME, 0, 0));
 		plugin.onHitsplatApplied(hitsplatApplied);
 		plugin.onGameTick(new GameTick());
 		verify(notifier, times(0)).notify(any());
@@ -292,7 +292,7 @@ public class IdleNotifierPluginTest
 		plugin.onInteractingChanged(new InteractingChanged(player, null));
 		plugin.onGameTick(new GameTick());
 
-		verify(notifier).notify("[" + PLAYER_NAME + "] is now idle!");
+		verify(notifier).notify("You are now idle!");
 	}
 
 	@Test
@@ -306,7 +306,7 @@ public class IdleNotifierPluginTest
 
 		when(client.getVar(eq(VarPlayer.SPECIAL_ATTACK_PERCENT))).thenReturn(500); // 50%
 		plugin.onGameTick(new GameTick());
-		verify(notifier).notify(eq("[" + PLAYER_NAME + "] has restored spec energy!"));
+		verify(notifier).notify(eq("You have restored spec energy!"));
 	}
 
 	@Test
@@ -321,6 +321,6 @@ public class IdleNotifierPluginTest
 		// No movement here
 		plugin.onGameTick(new GameTick());
 
-		verify(notifier).notify(eq("[" + PLAYER_NAME + "] has stopped moving!"));
+		verify(notifier).notify(eq("You have stopped moving!"));
 	}
 }

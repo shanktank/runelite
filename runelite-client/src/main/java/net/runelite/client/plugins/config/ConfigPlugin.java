@@ -75,15 +75,15 @@ public class ConfigPlugin extends Plugin
 		pluginListPanel.addFakePlugin(new PluginConfigurationDescriptor(
 				"RuneLite", "RuneLite client settings",
 				new String[]{"client", "notification", "size", "position", "window", "chrome", "focus", "font", "overlay", "tooltip", "infobox"},
-				null, runeLiteConfig, configManager.getConfigDescriptor(runeLiteConfig)
+				runeLiteConfig, configManager.getConfigDescriptor(runeLiteConfig)
 			),
 			new PluginConfigurationDescriptor(
 				"Chat Color", "Recolor chat text", new String[]{"colour", "messages"},
-				null, chatColorConfig, configManager.getConfigDescriptor(chatColorConfig)
+				chatColorConfig, configManager.getConfigDescriptor(chatColorConfig)
 			));
 		pluginListPanel.rebuildPluginList();
 
-		final BufferedImage icon = ImageUtil.getResourceStreamFromClass(getClass(), "config_icon.png");
+		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "config_icon.png");
 
 		navButton = NavigationButton.builder()
 			.tooltip("Configuration")
@@ -115,14 +115,13 @@ public class ConfigPlugin extends Plugin
 			}
 
 			// Expand config panel for plugin
-			PluginDescriptor descriptor = plugin.getClass().getAnnotation(PluginDescriptor.class);
 			SwingUtilities.invokeLater(() ->
 			{
 				if (!navButton.isSelected())
 				{
 					navButton.getOnSelect().run();
 				}
-				pluginListPanel.openConfigurationPanel(descriptor.name());
+				pluginListPanel.openConfigurationPanel(plugin.getName());
 			});
 		}
 	}

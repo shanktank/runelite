@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,7 @@ public class LootManager
 
 	private final EventBus eventBus;
 	private final Client client;
+	private final NpcUtil npcUtil;
 	private final ListMultimap<Integer, ItemStack> itemSpawns = ArrayListMultimap.create();
 	private final Set<LocalPoint> killPoints = new HashSet<>();
 	private WorldPoint playerLocationLastTick;
@@ -79,10 +81,12 @@ public class LootManager
 	private int delayedLootTickLimit;
 
 	@Inject
-	private LootManager(EventBus eventBus, Client client)
+	private LootManager(EventBus eventBus, Client client, NpcUtil npcUtil)
 	{
 		this.eventBus = eventBus;
 		this.client = client;
+		this.npcUtil = npcUtil;
+		eventBus.register(this);
 	}
 
 	@Subscribe
@@ -96,7 +100,7 @@ public class LootManager
 			delayedLootTickLimit = 0;
 		}
 
-		if (!npc.isDead())
+		if (!npcUtil.isDying(npc))
 		{
 			int id = npc.getId();
 			switch (id)
@@ -235,7 +239,7 @@ public class LootManager
 	public void onNpcChanged(NpcChanged npcChanged)
 	{
 		final NPC npc = npcChanged.getNpc();
-		if (npc.getId() == NpcID.THE_NIGHTMARE_9433)
+		if (npc.getId() == NpcID.THE_NIGHTMARE_9433 || npc.getId() == NpcID.PHOSANIS_NIGHTMARE_9424)
 		{
 			delayedLootNpc = npc;
 			delayedLootTickLimit = 15;
@@ -351,6 +355,7 @@ public class LootManager
 			case NpcID.VORKATH_8059:
 			case NpcID.VORKATH_8060:
 			case NpcID.VORKATH_8061:
+			{
 				int x = worldLocation.getX() + 3;
 				int y = worldLocation.getY() + 3;
 				if (playerLocationLastTick.getX() < x)
@@ -371,6 +376,27 @@ public class LootManager
 				}
 				worldLocation = new WorldPoint(x, y, worldLocation.getPlane());
 				break;
+			}
+			case NpcID.NEX:
+			case NpcID.NEX_11279:
+			case NpcID.NEX_11280:
+			case NpcID.NEX_11281:
+			case NpcID.NEX_11282:
+			{
+				// Nex loot is under the player, or under nex
+				LocalPoint localPoint = LocalPoint.fromWorld(client, playerLocationLastTick);
+				if (localPoint != null)
+				{
+					int x = localPoint.getSceneX();
+					int y = localPoint.getSceneY();
+					final int packed = x << 8 | y;
+					if (itemSpawns.containsKey(packed))
+					{
+						return playerLocationLastTick;
+					}
+				}
+				break;
+			}
 		}
 
 		return worldLocation;
@@ -402,5 +428,26 @@ public class LootManager
 		}
 
 		return new WorldPoint(x, y, worldLocation.getPlane());
+	}
+
+	/**
+	 * Get the list of items present at the provided WorldPoint that spawned this tick.
+	 *
+	 * @param worldPoint the location in question
+	 * @return the list of item stacks
+	 */
+	public Collection<ItemStack> getItemSpawns(WorldPoint worldPoint)
+	{
+		LocalPoint localPoint = LocalPoint.fromWorld(client, worldPoint);
+		if (localPoint == null)
+		{
+			return Collections.emptyList();
+		}
+
+		final int sceneX = localPoint.getSceneX();
+		final int sceneY = localPoint.getSceneY();
+		final int packed = sceneX << 8 | sceneY;
+		final List<ItemStack> itemStacks = itemSpawns.get(packed);
+		return Collections.unmodifiableList(itemStacks);
 	}
 }

@@ -29,7 +29,6 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import javax.inject.Inject;
 import net.runelite.api.Client;
-import net.runelite.api.Constants;
 import net.runelite.api.InventoryID;
 import net.runelite.api.Item;
 import net.runelite.api.ItemComposition;
@@ -55,6 +54,7 @@ class ItemPricesOverlay extends Overlay
 	private static final int EXPLORERS_RING_ITEM_WIDGETID = WidgetInfo.EXPLORERS_RING_ALCH_INVENTORY.getPackedId();
 	private static final int SEED_VAULT_ITEM_WIDGETID = WidgetInfo.SEED_VAULT_ITEM_CONTAINER.getPackedId();
 	private static final int SEED_VAULT_INVENTORY_ITEM_WIDGETID = WidgetInfo.SEED_VAULT_INVENTORY_ITEMS_CONTAINER.getPackedId();
+	private static final int POH_TREASURE_CHEST_INVENTORY_ITEM_WIDGETID = WidgetInfo.POH_TREASURE_CHEST_INVENTORY_CONTAINER.getPackedId();
 	
 	private final Client client;
 	private final ItemPricesConfig config;
@@ -90,18 +90,28 @@ class ItemPricesOverlay extends Overlay
 		}
 
 		final MenuEntry menuEntry = menuEntries[last];
-		final MenuAction action = MenuAction.of(menuEntry.getType());
+		final MenuAction action = menuEntry.getType();
 		final int widgetId = menuEntry.getParam1();
 		final int groupId = WidgetInfo.TO_GROUP(widgetId);
+		final boolean isAlching = menuEntry.getOption().equals("Cast") && menuEntry.getTarget().contains("High Level Alchemy");
 
 		// Tooltip action type handling
 		switch (action)
 		{
-			case ITEM_USE_ON_WIDGET:
-				if (!config.showWhileAlching() || !menuEntry.getOption().equals("Cast") || !menuEntry.getTarget().contains("High Level Alchemy"))
+			case WIDGET_TARGET_ON_WIDGET:
+				// Check target widget is the inventory
+				if (menuEntry.getWidget().getId() != WidgetInfo.INVENTORY.getId())
 				{
 					break;
 				}
+				// FALLTHROUGH
+			case WIDGET_USE_ON_ITEM:
+				// Require showWhileAlching and Cast High Level Alchemy
+				if (!config.showWhileAlching() || !isAlching)
+				{
+					break;
+				}
+				// FALLTHROUGH
 			case CC_OP:
 			case ITEM_USE:
 			case ITEM_FIRST_OPTION:
@@ -109,35 +119,47 @@ class ItemPricesOverlay extends Overlay
 			case ITEM_THIRD_OPTION:
 			case ITEM_FOURTH_OPTION:
 			case ITEM_FIFTH_OPTION:
-				// Item tooltip values
-				switch (groupId)
-				{
-					case WidgetID.EXPLORERS_RING_ALCH_GROUP_ID:
-						if (!config.showWhileAlching())
-						{
-							return null;
-						}
-					case WidgetID.INVENTORY_GROUP_ID:
-						if (config.hideInventory())
-						{
-							return null;
-						}
-						// intentional fallthrough
-					case WidgetID.BANK_GROUP_ID:
-					case WidgetID.BANK_INVENTORY_GROUP_ID:
-					case WidgetID.SEED_VAULT_GROUP_ID:
-					case WidgetID.SEED_VAULT_INVENTORY_GROUP_ID:
-						// Make tooltip
-						final String text = makeValueTooltip(menuEntry);
-						if (text != null)
-						{
-							tooltipManager.add(new Tooltip(ColorUtil.prependColorTag(text, new Color(238, 238, 238))));
-						}
-						break;
-				}
+				addTooltip(menuEntry, isAlching, groupId);
 				break;
+			case WIDGET_TARGET:
+				// Check that this is the inventory
+				if (menuEntry.getWidget().getId() == WidgetInfo.INVENTORY.getId())
+				{
+					addTooltip(menuEntry, isAlching, groupId);
+				}
 		}
+
 		return null;
+	}
+
+	private void addTooltip(MenuEntry menuEntry, boolean isAlching, int groupId)
+	{
+		// Item tooltip values
+		switch (groupId)
+		{
+			case WidgetID.EXPLORERS_RING_ALCH_GROUP_ID:
+				if (!config.showWhileAlching())
+				{
+					return;
+				}
+			case WidgetID.INVENTORY_GROUP_ID:
+			case WidgetID.POH_TREASURE_CHEST_INVENTORY_GROUP_ID:
+				if (config.hideInventory() && (!config.showWhileAlching() || !isAlching))
+				{
+					return;
+				}
+				// FALLTHROUGH
+			case WidgetID.BANK_GROUP_ID:
+			case WidgetID.BANK_INVENTORY_GROUP_ID:
+			case WidgetID.SEED_VAULT_GROUP_ID:
+			case WidgetID.SEED_VAULT_INVENTORY_GROUP_ID:
+				// Make tooltip
+				final String text = makeValueTooltip(menuEntry);
+				if (text != null)
+				{
+					tooltipManager.add(new Tooltip(ColorUtil.prependColorTag(text, new Color(238, 238, 238))));
+				}
+		}
 	}
 
 	private String makeValueTooltip(MenuEntry menuEntry)
@@ -155,7 +177,8 @@ class ItemPricesOverlay extends Overlay
 		if (widgetId == INVENTORY_ITEM_WIDGETID ||
 			widgetId == BANK_INVENTORY_ITEM_WIDGETID ||
 			widgetId == EXPLORERS_RING_ITEM_WIDGETID ||
-			widgetId == SEED_VAULT_INVENTORY_ITEM_WIDGETID)
+			widgetId == SEED_VAULT_INVENTORY_ITEM_WIDGETID ||
+			widgetId == POH_TREASURE_CHEST_INVENTORY_ITEM_WIDGETID)
 		{
 			container = client.getItemContainer(InventoryID.INVENTORY);
 		}
@@ -176,11 +199,10 @@ class ItemPricesOverlay extends Overlay
 		}
 
 		// Find the item in the container to get stack size
-		final Item[] items = container.getItems();
 		final int index = menuEntry.getParam0();
-		if (index < items.length)
+		final Item item = container.getItem(index);
+		if (item != null)
 		{
-			final Item item = items[index];
 			return getItemStackValueText(item);
 		}
 
@@ -189,7 +211,7 @@ class ItemPricesOverlay extends Overlay
 
 	private String getItemStackValueText(Item item)
 	{
-		int id = item.getId();
+		int id = itemManager.canonicalize(item.getId());
 		int qty = item.getQuantity();
 
 		// Special case for coins and platinum tokens
@@ -199,15 +221,10 @@ class ItemPricesOverlay extends Overlay
 		}
 		else if (id == ItemID.PLATINUM_TOKEN)
 		{
-			return QuantityFormatter.formatNumber(qty * 1000) + " gp";
+			return QuantityFormatter.formatNumber(qty * 1000L) + " gp";
 		}
 
 		ItemComposition itemDef = itemManager.getItemComposition(id);
-		if (itemDef.getNote() != -1)
-		{
-			id = itemDef.getLinkedNoteId();
-			itemDef = itemManager.getItemComposition(id);
-		}
 
 		// Only check prices for things with store prices
 		if (itemDef.getPrice() <= 0)
@@ -218,7 +235,7 @@ class ItemPricesOverlay extends Overlay
 		int gePrice = 0;
 		int haPrice = 0;
 		int haProfit = 0;
-		final int itemHaPrice = Math.round(itemDef.getPrice() * Constants.HIGH_ALCHEMY_MULTIPLIER);
+		final int itemHaPrice = itemDef.getHaPrice();
 
 		if (config.showGEPrice())
 		{
@@ -245,7 +262,7 @@ class ItemPricesOverlay extends Overlay
 	{
 		if (gePrice > 0)
 		{
-			itemStringBuilder.append("EX: ")
+			itemStringBuilder.append("GE: ")
 				.append(QuantityFormatter.quantityToStackSize((long) gePrice * qty))
 				.append(" gp");
 			if (config.showEA() && qty > 1)

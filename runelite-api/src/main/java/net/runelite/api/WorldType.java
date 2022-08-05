@@ -26,10 +26,12 @@ package net.runelite.api;
 
 import java.util.Collection;
 import java.util.EnumSet;
+import lombok.AllArgsConstructor;
 
 /**
  * An enumeration of possible world types.
  */
+@AllArgsConstructor
 public enum WorldType
 {
 	/**
@@ -45,6 +47,10 @@ public enum WorldType
 	 */
 	BOUNTY(1 << 5),
 	/**
+	 * PVP arena world type.
+	 */
+	PVP_ARENA(1 << 6),
+	/**
 	 * Skill total world type.
 	 */
 	SKILL_TOTAL(1 << 7),
@@ -57,27 +63,26 @@ public enum WorldType
 	 */
 	LAST_MAN_STANDING(1 << 14),
 	/**
-	 * Tournament world type.
+	 * Beta worlds without profiles that are saved.
 	 */
-	TOURNAMENT(1 << 25),
+	NOSAVE_MODE(1 << 25),
+	/**
+	 * Tournament world type
+	 */
+	TOURNAMENT_WORLD(1 << 26),
 	/**
 	 * Deadman world type.
 	 */
 	DEADMAN(1 << 29),
 	/**
-	 * League world type
+	 * Seasonal world type for leagues and seasonal deadman.
 	 */
-	LEAGUE(1 << 30);
+	SEASONAL(1 << 30);
 
 	private final int mask;
 
-	WorldType(int mask)
-	{
-		this.mask = mask;
-	}
-
 	private static final EnumSet<WorldType> PVP_WORLD_TYPES = EnumSet.of(
-		DEADMAN,
+		DEADMAN, // dmmt worlds are also flaged as DEADMAN
 		PVP
 	);
 

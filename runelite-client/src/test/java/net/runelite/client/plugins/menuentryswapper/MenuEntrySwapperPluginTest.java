@@ -28,23 +28,32 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.testing.fieldbinder.Bind;
 import com.google.inject.testing.fieldbinder.BoundFieldModule;
+import java.util.Arrays;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
+import net.runelite.api.KeyCode;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
+import net.runelite.api.NPC;
+import net.runelite.api.NPCComposition;
+import net.runelite.api.ObjectComposition;
 import net.runelite.api.events.ClientTick;
-import net.runelite.api.events.MenuEntryAdded;
+import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.ItemManager;
+import net.runelite.client.menus.TestMenuEntry;
 import static org.junit.Assert.assertArrayEquals;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import org.mockito.Mock;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -68,11 +77,16 @@ public class MenuEntrySwapperPluginTest
 
 	@Mock
 	@Bind
+	ChatMessageManager chatMessageManager;
+
+	@Mock
+	@Bind
 	MenuEntrySwapperConfig config;
 
 	@Inject
 	MenuEntrySwapperPlugin menuEntrySwapperPlugin;
 
+	private NPC npc;
 	private MenuEntry[] entries;
 
 	@Before
@@ -81,14 +95,17 @@ public class MenuEntrySwapperPluginTest
 		Guice.createInjector(BoundFieldModule.of(this)).injectMembers(this);
 
 		when(client.getGameState()).thenReturn(GameState.LOGGED_IN);
+		when(client.getObjectDefinition(anyInt())).thenReturn(mock(ObjectComposition.class));
+
+		npc = mock(NPC.class);
+		NPCComposition composition = mock(NPCComposition.class);
+		when(npc.getTransformedComposition()).thenReturn(composition);
 
 		when(client.getMenuEntries()).thenAnswer((Answer<MenuEntry[]>) invocationOnMock ->
 		{
 			// The menu implementation returns a copy of the array, which causes swap() to not
 			// modify the same array being iterated in onClientTick
-			MenuEntry[] copy = new MenuEntry[entries.length];
-			System.arraycopy(entries, 0, copy, 0, entries.length);
-			return copy;
+			return Arrays.copyOf(entries, entries.length);
 		});
 		doAnswer((Answer<Void>) invocationOnMock ->
 		{
@@ -96,27 +113,30 @@ public class MenuEntrySwapperPluginTest
 			entries = (MenuEntry[]) argument;
 			return null;
 		}).when(client).setMenuEntries(any(MenuEntry[].class));
+
+		menuEntrySwapperPlugin.setupSwaps();
 	}
 
-	private static MenuEntry menu(String option, String target, MenuAction menuAction)
+	private MenuEntry menu(String option, String target, MenuAction menuAction)
 	{
 		return menu(option, target, menuAction, 0);
 	}
 
-	private static MenuEntry menu(String option, String target, MenuAction menuAction, int identifier)
+	private MenuEntry menu(String option, String target, MenuAction menuAction, int identifier)
 	{
-		MenuEntry menuEntry = new MenuEntry();
+		TestMenuEntry menuEntry = new TestMenuEntry();
 		menuEntry.setOption(option);
 		menuEntry.setTarget(target);
-		menuEntry.setType(menuAction.getId());
+		menuEntry.setType(menuAction);
 		menuEntry.setIdentifier(identifier);
+		menuEntry.setActor(npc);
 		return menuEntry;
 	}
 
 	@Test
 	public void testSlayerMaster()
 	{
-		when(config.swapTrade()).thenReturn(true);
+		lenient().when(config.swapTrade()).thenReturn(true);
 		when(config.swapAssignment()).thenReturn(true);
 
 		entries = new MenuEntry[]{
@@ -129,15 +149,14 @@ public class MenuEntrySwapperPluginTest
 		menuEntrySwapperPlugin.onClientTick(new ClientTick());
 
 		ArgumentCaptor<MenuEntry[]> argumentCaptor = ArgumentCaptor.forClass(MenuEntry[].class);
-		// Once for assignment<->talk-to and once for trade<->talk-to
-		verify(client, times(2)).setMenuEntries(argumentCaptor.capture());
+		verify(client).setMenuEntries(argumentCaptor.capture());
 
-		MenuEntry[] value = argumentCaptor.getValue();
+		// check the assignment swap is hit first instead of trade
 		assertArrayEquals(new MenuEntry[]{
 			menu("Cancel", "", MenuAction.CANCEL),
 			menu("Rewards", "Duradel", MenuAction.NPC_FIFTH_OPTION),
-			menu("Talk-to", "Duradel", MenuAction.NPC_FIRST_OPTION),
 			menu("Trade", "Duradel", MenuAction.NPC_FOURTH_OPTION),
+			menu("Talk-to", "Duradel", MenuAction.NPC_FIRST_OPTION),
 			menu("Assignment", "Duradel", MenuAction.NPC_THIRD_OPTION),
 		}, argumentCaptor.getValue());
 	}
@@ -222,7 +241,7 @@ public class MenuEntrySwapperPluginTest
 	public void testTeleport()
 	{
 		when(config.swapTeleportSpell()).thenReturn(true);
-		menuEntrySwapperPlugin.setShiftModifier(true);
+		when(client.isKeyPressed(KeyCode.KC_SHIFT)).thenReturn(true);
 
 		// Cast -> Grand Exchange
 		entries = new MenuEntry[]{
@@ -275,7 +294,6 @@ public class MenuEntrySwapperPluginTest
 	public void testTobDoor()
 	{
 		when(config.swapQuick()).thenReturn(true);
-		when(config.swapHomePortal()).thenReturn(HouseMode.HOME);
 
 		//Quick-enter, Enter
 		entries = new MenuEntry[]{
@@ -306,7 +324,7 @@ public class MenuEntrySwapperPluginTest
 	public void testShiftWithdraw()
 	{
 		when(config.bankDepositShiftClick()).thenReturn(ShiftDepositMode.EXTRA_OP);
-		menuEntrySwapperPlugin.setShiftModifier(true);
+		when(client.isKeyPressed(KeyCode.KC_SHIFT)).thenReturn(true);
 
 		entries = new MenuEntry[]{
 			menu("Cancel", "", MenuAction.CANCEL),
@@ -314,14 +332,7 @@ public class MenuEntrySwapperPluginTest
 			menu("Deposit-1", "Abyssal whip", MenuAction.CC_OP, 2),
 		};
 
-		menuEntrySwapperPlugin.onMenuEntryAdded(new MenuEntryAdded(
-			"Deposit-1",
-			"Abyssal whip",
-			MenuAction.CC_OP.getId(),
-			2,
-			-1,
-			-1
-		));
+		menuEntrySwapperPlugin.onClientTick(new ClientTick());
 
 		ArgumentCaptor<MenuEntry[]> argumentCaptor = ArgumentCaptor.forClass(MenuEntry[].class);
 		verify(client).setMenuEntries(argumentCaptor.capture());
@@ -337,7 +348,7 @@ public class MenuEntrySwapperPluginTest
 	public void testShiftDeposit()
 	{
 		when(config.bankDepositShiftClick()).thenReturn(ShiftDepositMode.DEPOSIT_ALL);
-		menuEntrySwapperPlugin.setShiftModifier(true);
+		when(client.isKeyPressed(KeyCode.KC_SHIFT)).thenReturn(true);
 
 		entries = new MenuEntry[]{
 			menu("Cancel", "", MenuAction.CANCEL),
@@ -346,14 +357,7 @@ public class MenuEntrySwapperPluginTest
 			menu("Deposit-1", "Rune arrow", MenuAction.CC_OP, 2),
 		};
 
-		menuEntrySwapperPlugin.onMenuEntryAdded(new MenuEntryAdded(
-			"Deposit-1",
-			"Rune arrow",
-			MenuAction.CC_OP.getId(),
-			2,
-			-1,
-			-1
-		));
+		menuEntrySwapperPlugin.onClientTick(new ClientTick());
 
 		ArgumentCaptor<MenuEntry[]> argumentCaptor = ArgumentCaptor.forClass(MenuEntry[].class);
 		verify(client).setMenuEntries(argumentCaptor.capture());
@@ -363,6 +367,66 @@ public class MenuEntrySwapperPluginTest
 			menu("Wield", "Rune arrow", MenuAction.CC_OP_LOW_PRIORITY, 9),
 			menu("Deposit-1", "Rune arrow", MenuAction.CC_OP, 2),
 			menu("Deposit-All", "Rune arrow", MenuAction.CC_OP, 8),
+		}, argumentCaptor.getValue());
+	}
+
+	@Test
+	public void testBirdhouse()
+	{
+		when(config.swapBirdhouseEmpty()).thenReturn(true);
+
+		entries = new MenuEntry[]{
+			menu("Cancel", "", MenuAction.CANCEL),
+			menu("Examine", "Redwood birdhouse", MenuAction.EXAMINE_OBJECT),
+			menu("Walk here", "", MenuAction.WALK),
+
+			menu("Empty", "Redwood birdhouse", MenuAction.GAME_OBJECT_THIRD_OPTION),
+			menu("Seeds", "Redwood birdhouse", MenuAction.GAME_OBJECT_SECOND_OPTION),
+			menu("Interact", "Redwood birdhouse", MenuAction.GAME_OBJECT_FIRST_OPTION),
+		};
+
+		menuEntrySwapperPlugin.onClientTick(new ClientTick());
+
+		ArgumentCaptor<MenuEntry[]> argumentCaptor = ArgumentCaptor.forClass(MenuEntry[].class);
+		verify(client).setMenuEntries(argumentCaptor.capture());
+
+		assertArrayEquals(new MenuEntry[]{
+			menu("Cancel", "", MenuAction.CANCEL),
+			menu("Examine", "Redwood birdhouse", MenuAction.EXAMINE_OBJECT),
+			menu("Walk here", "", MenuAction.WALK),
+
+			menu("Interact", "Redwood birdhouse", MenuAction.GAME_OBJECT_FIRST_OPTION),
+			menu("Seeds", "Redwood birdhouse", MenuAction.GAME_OBJECT_SECOND_OPTION),
+			menu("Empty", "Redwood birdhouse", MenuAction.GAME_OBJECT_THIRD_OPTION),
+		}, argumentCaptor.getValue());
+	}
+
+	@Test
+	public void testZanarisFairyRing()
+	{
+		when(config.swapFairyRing()).thenReturn(FairyRingMode.ZANARIS);
+
+		entries = new MenuEntry[]{
+			menu("Cancel", "", MenuAction.CANCEL),
+			menu("Examine", "Fairy ring", MenuAction.EXAMINE_OBJECT),
+			menu("Walk here", "", MenuAction.WALK),
+
+			menu("Last-destination (AIQ)", "Fairy ring", MenuAction.GAME_OBJECT_SECOND_OPTION),
+			menu("Configure", "Fairy ring", MenuAction.GAME_OBJECT_FIRST_OPTION),
+		};
+
+		menuEntrySwapperPlugin.onClientTick(new ClientTick());
+
+		ArgumentCaptor<MenuEntry[]> argumentCaptor = ArgumentCaptor.forClass(MenuEntry[].class);
+		verify(client).setMenuEntries(argumentCaptor.capture());
+
+		assertArrayEquals(new MenuEntry[]{
+			menu("Cancel", "", MenuAction.CANCEL),
+			menu("Examine", "Fairy ring", MenuAction.EXAMINE_OBJECT),
+			menu("Walk here", "", MenuAction.WALK),
+
+			menu("Configure", "Fairy ring", MenuAction.GAME_OBJECT_FIRST_OPTION),
+			menu("Last-destination (AIQ)", "Fairy ring", MenuAction.GAME_OBJECT_SECOND_OPTION),
 		}, argumentCaptor.getValue());
 	}
 }

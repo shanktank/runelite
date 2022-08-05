@@ -72,6 +72,10 @@ public class XpTrackerPluginTest
 
 	@Mock
 	@Bind
+	private XpClient xpClient;
+
+	@Mock
+	@Bind
 	private NPCManager npcManager;
 
 	@Mock

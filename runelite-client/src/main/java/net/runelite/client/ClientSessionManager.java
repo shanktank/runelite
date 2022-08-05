@@ -43,31 +43,37 @@ import net.runelite.client.util.RunnableExceptionLogger;
 @Slf4j
 public class ClientSessionManager
 {
-	private final SessionClient sessionClient = new SessionClient();
 	private final ScheduledExecutorService executorService;
 	private final Client client;
+	private final SessionClient sessionClient;
 
 	private ScheduledFuture<?> scheduledFuture;
 	private UUID sessionId;
 
 	@Inject
-	ClientSessionManager(ScheduledExecutorService executorService, @Nullable Client client)
+	ClientSessionManager(ScheduledExecutorService executorService,
+		@Nullable Client client,
+		SessionClient sessionClient)
 	{
 		this.executorService = executorService;
 		this.client = client;
+		this.sessionClient = sessionClient;
 	}
 
 	public void start()
 	{
-		try
+		executorService.execute(() ->
 		{
-			sessionId = sessionClient.open();
-			log.debug("Opened session {}", sessionId);
-		}
-		catch (IOException ex)
-		{
-			log.warn("error opening session", ex);
-		}
+			try
+			{
+				sessionId = sessionClient.open();
+				log.debug("Opened session {}", sessionId);
+			}
+			catch (IOException ex)
+			{
+				log.warn("error opening session", ex);
+			}
+		});
 
 		scheduledFuture = executorService.scheduleWithFixedDelay(RunnableExceptionLogger.wrap(this::ping), 1, 10, TimeUnit.MINUTES);
 	}
@@ -81,7 +87,11 @@ public class ClientSessionManager
 		{
 			try
 			{
-				sessionClient.delete(sessionId);
+				UUID localUuid = sessionId;
+				if (localUuid != null)
+				{
+					sessionClient.delete(localUuid);
+				}
 			}
 			catch (IOException ex)
 			{
