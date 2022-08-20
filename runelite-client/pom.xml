@@ -114,11 +114,6 @@
 			<version>1.2</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-csv</artifactId>
-			<version>1.4</version>
-		</dependency>
-		<dependency>
 			<groupId>net.runelite.archive-patcher</groupId>
 			<artifactId>archive-patcher-applier</artifactId>
 			<version>1.2</version>
@@ -267,7 +262,7 @@
 		<dependency>
 			<groupId>net.runelite.arn</groupId>
 			<artifactId>http-api</artifactId>
-			<version>1.0.10</version>
+			<version>1.1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>net.runelite</groupId>
