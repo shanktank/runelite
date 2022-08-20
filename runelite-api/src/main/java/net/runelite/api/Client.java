@@ -2015,4 +2015,11 @@ public interface Client extends OAuthApi, GameEngine
 	 * @return
 	 */
 	Deque<AmbientSoundEffect> getAmbientSoundEffects();
+
+	/**
+	 * Interfaces for NeverLogoutPlugin
+	 * @param cycles
+	 */
+	void setMouseIdleTicks(int cycles);
+	void setKeyboardIdleTicks(int cycles);
 }
