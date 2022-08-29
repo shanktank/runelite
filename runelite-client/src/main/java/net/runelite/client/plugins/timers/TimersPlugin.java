@@ -116,6 +116,8 @@ public class TimersPlugin extends Plugin
 	private static final String PICKPOCKET_FAILURE_MESSAGE = "You fail to pick the ";
 	private static final String DODGY_NECKLACE_PROTECTION_MESSAGE = "Your dodgy necklace protects you.";
 	private static final String SHADOW_VEIL_PROTECTION_MESSAGE = "Your attempt to steal goes unnoticed.";
+	private static final String SILK_DRESSING_MESSAGE = "You quickly apply the dressing to your wounds.";
+	private static final String BLESSED_CRYSTAL_SCARAB_MESSAGE = "You crack the crystal in your hand.";
 
 	private static final Pattern DIVINE_POTION_PATTERN = Pattern.compile("You drink some of your divine (.+) potion\\.");
 	private static final int VENOM_VALUE_CUTOFF = -40; // Antivenom < -40 <= Antipoison < 0
@@ -132,6 +134,7 @@ public class TimersPlugin extends Plugin
 	private int freezeTime = -1; // time frozen, in game ticks
 
 	private TimerTimer staminaTimer;
+	private TimerTimer buffTimer;
 
 	private boolean imbuedHeartTimerActive;
 	private int nextPoisonTick;
@@ -326,25 +329,50 @@ public class TimersPlugin extends Plugin
 			{
 				final Duration staminaDuration = Duration.of(10L * totalStaminaEffect, RSTimeUnit.GAME_TICKS);
 
-				if (staminaTimer == null && totalStaminaEffect > 0)
-				{
-					staminaTimer = createGameTimer(STAMINA, staminaDuration);
-				}
-				else if (totalStaminaEffect == 0)
+				if (totalStaminaEffect == 0)
 				{
 					removeGameTimer(STAMINA);
 					staminaTimer = null;
 				}
+				else if (staminaTimer == null)
+				{
+					staminaTimer = createGameTimer(STAMINA, staminaDuration);
+				}
 				else
 				{
-					Instant endInstant = Instant.now().plus(staminaDuration);
-					int timeDifference = (int) Duration.between(staminaTimer.getEndTime(), endInstant).getSeconds();
-					if (timeDifference != 0)
-					{
-						Duration remainingDuration = Duration.between(staminaTimer.getStartTime(), endInstant);
-						staminaTimer.setDuration(remainingDuration);
-					}
+					staminaTimer.updateDuration(staminaDuration);
 				}
+			}
+		}
+
+		if (event.getVarbitId() == Varbits.BUFF_STAT_BOOST && config.showOverload())
+		{
+			int serverTicks = event.getValue() * 25; // from [proc,buff_bar_get_value]
+			Duration duration = Duration.of(serverTicks, RSTimeUnit.GAME_TICKS);
+			if (serverTicks == 0)
+			{
+				removeGameTimer(SMELLING_SALTS);
+				buffTimer = null;
+			}
+			else if (buffTimer == null)
+			{
+				buffTimer = createGameTimer(SMELLING_SALTS, duration);
+			}
+			else
+			{
+				buffTimer.updateDuration(duration);
+			}
+		}
+
+		if (event.getVarbitId() == Varbits.LIQUID_ADERNALINE_ACTIVE && config.showLiquidAdrenaline())
+		{
+			if (event.getValue() == 1)
+			{
+				createGameTimer(LIQUID_ADRENALINE);
+			}
+			else
+			{
+				removeGameTimer(LIQUID_ADRENALINE);
 			}
 		}
 	}
@@ -385,6 +413,7 @@ public class TimersPlugin extends Plugin
 		{
 			removeGameTimer(OVERLOAD);
 			removeGameTimer(OVERLOAD_RAID);
+			removeGameTimer(SMELLING_SALTS);
 		}
 
 		if (!config.showPrayerEnhance())
@@ -467,6 +496,21 @@ public class TimersPlugin extends Plugin
 		else
 		{
 			createTzhaarTimer();
+		}
+
+		if (!config.showLiquidAdrenaline())
+		{
+			removeGameTimer(LIQUID_ADRENALINE);
+		}
+
+		if (!config.showSilkDressing())
+		{
+			removeGameTimer(SILK_DRESSING);
+		}
+
+		if (!config.showBlessedCrystalScarab())
+		{
+			removeGameTimer(BLESSED_CRYSTAL_SCARAB);
 		}
 	}
 
@@ -806,6 +850,16 @@ public class TimersPlugin extends Plugin
 				}
 			}
 		}
+
+		if (message.equals(SILK_DRESSING_MESSAGE) && config.showSilkDressing())
+		{
+			createGameTimer(SILK_DRESSING);
+		}
+
+		if (message.equals(BLESSED_CRYSTAL_SCARAB_MESSAGE) && config.showBlessedCrystalScarab())
+		{
+			createGameTimer(BLESSED_CRYSTAL_SCARAB);
+		}
 	}
 
 	private boolean isInFightCaves()
@@ -862,7 +916,7 @@ public class TimersPlugin extends Plugin
 				return;
 		}
 
-		int lastTeleport = client.getVar(varPlayer);
+		int lastTeleport = client.getVarpValue(varPlayer);
 		long lastTeleportSeconds = (long) lastTeleport * 60;
 		Instant teleportExpireInstant = Instant.ofEpochSecond(lastTeleportSeconds).plus(teleport.getDuration());
 		Duration remainingTime = Duration.between(Instant.now(), teleportExpireInstant);
