@@ -299,4 +299,17 @@ public interface ScreenshotConfig extends Config
 	{
 		return true;
 	}
+
+	// TODO: begin
+	@ConfigItem(
+			keyName = "mentions",
+			name = "Screenshot Mentions",
+			description = "Configures whether screenshots are taken when the player is mentioned in chat.",
+			position = 15
+	)
+	default boolean screenshotMentions()
+	{
+		return true;
+	}
+	// TODO: end
 }

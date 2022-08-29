@@ -34,8 +34,7 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -63,6 +62,8 @@ import net.runelite.api.events.ScriptPreFired;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetID;
+
+import static java.util.regex.Pattern.quote;
 import static net.runelite.api.widgets.WidgetID.BARROWS_REWARD_GROUP_ID;
 import static net.runelite.api.widgets.WidgetID.CHAMBERS_OF_XERIC_REWARD_GROUP_ID;
 import static net.runelite.api.widgets.WidgetID.CLUE_SCROLL_REWARD_GROUP_ID;
@@ -195,6 +196,11 @@ public class ScreenshotPlugin extends Plugin
 	private NavigationButton titleBarButton;
 
 	private String kickPlayerName;
+
+	// TODO: begin
+	private Pattern usernameMatcher = null;
+	private boolean shouldNotify = true;
+	// TODO: end
 
 	private final HotkeyListener hotkeyListener = new HotkeyListener(() -> config.hotkey())
 	{
@@ -348,6 +354,35 @@ public class ScreenshotPlugin extends Plugin
 	@Subscribe
 	public void onChatMessage(ChatMessage event)
 	{
+		// TODO: begin
+		ChatMessageType eventType = event.getType();
+		ChatMessageType[] eventTypes = {
+				ChatMessageType.MODCHAT, ChatMessageType.PUBLICCHAT, ChatMessageType.FRIENDSCHAT, ChatMessageType.AUTOTYPER,
+				ChatMessageType.MODAUTOTYPER, ChatMessageType.PLAYERRELATED, ChatMessageType.TENSECTIMEOUT
+		};
+		List<ChatMessageType> cmt = new ArrayList<>(Arrays.asList(eventTypes));
+
+		if(cmt.contains(eventType)) {
+			if(usernameMatcher == null && client.getLocalPlayer() != null && client.getLocalPlayer().getName() != null) {
+				usernameMatcher = Pattern.compile("(" + quote(client.getLocalPlayer().getName()) + ")|(Enari)", Pattern.CASE_INSENSITIVE);
+			}
+
+			if(config.screenshotMentions() && (usernameMatcher != null)) {
+				try {
+					Matcher matcher = usernameMatcher.matcher(event.getMessageNode().getValue());
+					if(matcher.find()) {
+						String fileName = "Mention " + " (" + matcher.group(1) + ")";
+						shouldNotify = false;
+						takeScreenshot(fileName, "Mentions");
+						shouldNotify = true;
+					}
+				} catch (NullPointerException e) {
+					log.debug(e.toString());
+				}
+			}
+		}
+		// TODO: end
+
 		if (event.getType() != ChatMessageType.GAMEMESSAGE
 			&& event.getType() != ChatMessageType.SPAM
 			&& event.getType() != ChatMessageType.TRADE

@@ -26,7 +26,12 @@ package net.runelite.client;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.Properties;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -122,10 +127,48 @@ public class RuneLiteProperties
 		return properties.getProperty(JAV_CONFIG_BACKUP);
 	}
 
+	public static String getLatestVersion() throws IOException {
+		Scanner urlScanner = new Scanner(new URL("https://repo.runelite.net/plugins/").openStream());
+		Pattern versionRegex = Pattern.compile("(>)(.*)([\\d+\\.]*)(/)(.*)(<)");
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy H:m");
+
+		String maxVersion = "";
+		long latestTime = 0;
+
+		while(urlScanner.hasNext()) {
+			String line = urlScanner.next();
+			Matcher matcher = versionRegex.matcher(line);
+
+			if(matcher.find() && !line.matches(".*\\.\\./?.*")) {
+				String dateTime = urlScanner.next() + " " + urlScanner.next();
+				long epochTime;
+
+				try {
+					epochTime = dateFormat.parse(dateTime).getTime();
+					if(epochTime > latestTime) {
+						latestTime = epochTime;
+						maxVersion = matcher.group(2);
+					}
+				} catch(Exception e) {
+					System.out.println(e);
+				}
+			}
+		}
+
+		return maxVersion;
+	}
+
 	public static HttpUrl getPluginHubBase()
 	{
-		String version = System.getProperty(PLUGINHUB_VERSION, properties.getProperty(PLUGINHUB_VERSION));
-		return HttpUrl.get(properties.get(PLUGINHUB_BASE) + "/" + version);
+		//String version = System.getProperty(PLUGINHUB_VERSION, properties.getProperty(PLUGINHUB_VERSION));
+		String version = properties.get(PLUGINHUB_BASE) + "/";
+		try {
+			version += getLatestVersion();
+		} catch(IOException e) {
+			version += "1.8.30";
+		}
+		System.out.println(version);
+		return HttpUrl.get(version);
 	}
 
 	public static String getApiBase()
