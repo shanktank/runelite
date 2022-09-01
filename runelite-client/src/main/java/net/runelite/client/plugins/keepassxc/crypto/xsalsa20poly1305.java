@@ -1,17 +1,12 @@
-package net.runelite.client.plugins.keepassxc;
+package net.runelite.client.plugins.keepassxc.crypto;
 
-import net.runelite.client.plugins.keepassxc.poly1305;
-import net.runelite.client.plugins.keepassxc.xsalsa20;
-
-public class xsalsa20poly1305
-{
+public class xsalsa20poly1305 {
     final int crypto_secretbox_KEYBYTES = 32;
     final int crypto_secretbox_NONCEBYTES = 24;
     final int crypto_secretbox_ZEROBYTES = 32;
     final int crypto_secretbox_BOXZEROBYTES = 16;
 
-    static public int crypto_secretbox(byte[] c, byte[] m, long mlen, byte[] n, byte[] k)
-    {
+    static public int crypto_secretbox(byte[] c, byte[] m, long mlen, byte[] n, byte[] k) {
         if (mlen < 32)
             return -1;
 
@@ -24,8 +19,7 @@ public class xsalsa20poly1305
         return 0;
     }
 
-    static public int crypto_secretbox_open(byte[] m, byte[] c, long clen, byte[] n, byte[] k)
-    {
+    static public int crypto_secretbox_open(byte[] m, byte[] c, long clen, byte[] n, byte[] k) {
         if (clen < 32)
             return -1;
 

@@ -1,7 +1,6 @@
-package net.runelite.client.plugins.keepassxc;
+package net.runelite.client.plugins.keepassxc.crypto;
 
-public class salsa20
-{
+public class salsa20 {
     final int crypto_core_salsa20_ref_OUTPUTBYTES = 64;
     final int crypto_core_salsa20_ref_INPUTBYTES = 16;
     final int crypto_core_salsa20_ref_KEYBYTES = 32;
@@ -11,29 +10,28 @@ public class salsa20
 
     final static int ROUNDS = 20;
 
-    static long rotate(int u, int c)
-    {
+    static long rotate(int u, int c) {
         return (u << c) | (u >>> (32 - c));
     }
 
-    static int load_littleendian(byte[] x, int offset)
-    {
-        return ((int)(x[offset])&0xff) |
-                ((((int)(x[offset + 1])&0xff)) << 8) |
-                ((((int)(x[offset + 2])&0xff)) << 16) |
-                ((((int)(x[offset + 3])&0xff)) << 24);
+    static int load_littleendian(byte[] x, int offset) {
+        return ((int) (x[offset]) & 0xff) |
+                ((((int) (x[offset + 1]) & 0xff)) << 8) |
+                ((((int) (x[offset + 2]) & 0xff)) << 16) |
+                ((((int) (x[offset + 3]) & 0xff)) << 24);
     }
 
-    static void store_littleendian(byte[] x, int offset, int u)
-    {
-        x[offset] = (byte) u; u >>>= 8;
-        x[offset + 1] = (byte) u; u >>>= 8;
-        x[offset + 2] = (byte) u; u >>>= 8;
+    static void store_littleendian(byte[] x, int offset, int u) {
+        x[offset] = (byte) u;
+        u >>>= 8;
+        x[offset + 1] = (byte) u;
+        u >>>= 8;
+        x[offset + 2] = (byte) u;
+        u >>>= 8;
         x[offset + 3] = (byte) u;
     }
 
-    public static int crypto_core(byte[] outv, byte[] inv, byte[] k, byte[] c)
-    {
+    public static int crypto_core(byte[] outv, byte[] inv, byte[] k, byte[] c) {
         int x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15;
         int j0, j1, j2, j3, j4, j5, j6, j7, j8, j9, j10, j11, j12, j13, j14, j15;
         int i;
@@ -55,8 +53,7 @@ public class salsa20
         j14 = x14 = load_littleendian(k, 28);
         j15 = x15 = load_littleendian(c, 12);
 
-        for (i = ROUNDS; i > 0; i -= 2)
-        {
+        for (i = ROUNDS; i > 0; i -= 2) {
             x4 ^= rotate(x0 + x12, 7);
             x8 ^= rotate(x4 + x0, 9);
             x12 ^= rotate(x8 + x4, 13);
@@ -128,8 +125,7 @@ public class salsa20
         return 0;
     }
 
-    public static int crypto_stream(byte[] c, int clen, byte[] n, int noffset, byte[] k)
-    {
+    public static int crypto_stream(byte[] c, int clen, byte[] n, int noffset, byte[] k) {
         byte[] inv = new byte[16];
         byte[] block = new byte[64];
 
@@ -144,15 +140,13 @@ public class salsa20
         for (int i = 8; i < 16; ++i)
             inv[i] = 0;
 
-        while (clen >= 64)
-        {
+        while (clen >= 64) {
             salsa20.crypto_core(c, inv, k, xsalsa20.sigma);
 
             int u = 1;
 
-            for (int i = 8; i < 16; ++i)
-            {
-                u += inv[i]&0xff;
+            for (int i = 8; i < 16; ++i) {
+                u += inv[i] & 0xff;
                 inv[i] = (byte) u;
                 u >>>= 8;
             }
@@ -161,8 +155,7 @@ public class salsa20
             coffset += 64;
         }
 
-        if (clen != 0)
-        {
+        if (clen != 0) {
             salsa20.crypto_core(block, inv, k, xsalsa20.sigma);
 
             for (int i = 0; i < clen; ++i)
@@ -172,8 +165,7 @@ public class salsa20
         return 0;
     }
 
-    public static int crypto_stream_xor(byte[] c, byte[] m, int mlen, byte[] n, int noffset, byte[] k)
-    {
+    public static int crypto_stream_xor(byte[] c, byte[] m, int mlen, byte[] n, int noffset, byte[] k) {
         byte[] inv = new byte[16];
         byte[] block = new byte[64];
 
@@ -189,18 +181,16 @@ public class salsa20
         for (int i = 8; i < 16; ++i)
             inv[i] = 0;
 
-        while (mlen >= 64)
-        {
+        while (mlen >= 64) {
             salsa20.crypto_core(block, inv, k, xsalsa20.sigma);
 
             for (int i = 0; i < 64; ++i)
-                c[coffset + i] = (byte)(m[moffset + i] ^ block[i]);
+                c[coffset + i] = (byte) (m[moffset + i] ^ block[i]);
 
             int u = 1;
 
-            for (int i = 8; i < 16; ++i)
-            {
-                u += inv[i]&0xff;
+            for (int i = 8; i < 16; ++i) {
+                u += inv[i] & 0xff;
                 inv[i] = (byte) u;
                 u >>>= 8;
             }
@@ -210,12 +200,11 @@ public class salsa20
             moffset += 64;
         }
 
-        if (mlen != 0)
-        {
+        if (mlen != 0) {
             salsa20.crypto_core(block, inv, k, xsalsa20.sigma);
 
             for (int i = 0; i < mlen; ++i)
-                c[coffset + i] = (byte)(m[moffset + i] ^ block[i]);
+                c[coffset + i] = (byte) (m[moffset + i] ^ block[i]);
         }
 
         return 0;

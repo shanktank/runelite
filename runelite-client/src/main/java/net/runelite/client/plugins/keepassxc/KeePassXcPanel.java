@@ -1,10 +1,10 @@
 package net.runelite.client.plugins.keepassxc;
 
-import net.runelite.client.plugins.keepassxc.DatabaseClosedException;
-import net.runelite.client.plugins.keepassxc.GetLogins;
-import net.runelite.client.plugins.keepassxc.IOTimeoutException;
-import net.runelite.client.plugins.keepassxc.KeePassXCSocket;
-import net.runelite.client.plugins.keepassxc.NoLoginsFound;
+//import net.runelite.client.plugins.keepassxc.DatabaseClosedException;
+//import net.runelite.client.plugins.keepassxc.GetLogins;
+//import net.runelite.client.plugins.keepassxc.IOTimeoutException;
+//import net.runelite.client.plugins.keepassxc.KeePassXCSocket;
+//import net.runelite.client.plugins.keepassxc.NoLoginsFound;
 import java.awt.BorderLayout;
 import java.io.IOException;
 import javax.inject.Inject;
@@ -23,8 +23,7 @@ import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.SwingUtil;
 
 @Slf4j
-public class KeePassXcPanel extends PluginPanel
-{
+public class KeePassXcPanel extends PluginPanel {
 	private static final String URL = "https://secure.runescape.com/";
 
 	private final Client client;
@@ -36,8 +35,7 @@ public class KeePassXcPanel extends PluginPanel
 	private KeePassXcConfig config;
 
 	@Inject
-	public KeePassXcPanel(Client client, ClientToolbar clientToolbar)
-	{
+	public KeePassXcPanel(Client client, ClientToolbar clientToolbar) {
 		this.client = client;
 		this.clientToolbar = clientToolbar;
 
@@ -51,14 +49,11 @@ public class KeePassXcPanel extends PluginPanel
 		setBorder(new EmptyBorder(5, 5, 5, 5));
 	}
 
-	public void load()
-	{
-		Thread t = new Thread(() ->
-		{
+	public void load() {
+		Thread t = new Thread(() -> {
 			String message;
 			Throwable ex;
-			try (KeePassXCSocket sock = new KeePassXCSocket())
-			{
+			try(KeePassXCSocket sock = new KeePassXCSocket()) {
 				sock.setDeadline(500);
 				sock.init();
 				sock.clearDeadline();
@@ -69,31 +64,21 @@ public class KeePassXcPanel extends PluginPanel
 					.build(), GetLogins.Response.class);
 				SwingUtilities.invokeLater(() -> this.open(r));
 				return;
-			}
-			catch (NoLoginsFound e)
-			{
+			} catch(NoLoginsFound e) {
 				ex = e;
 				message = "No logins found for \"" + URL + "\"";
-			}
-			catch (DatabaseClosedException e)
-			{
+			} catch(DatabaseClosedException e) {
 				ex = e;
 				message = "The database is locked";
-			}
-			catch (IOTimeoutException e)
-			{
+			} catch(IOTimeoutException e) {
 				ex = e;
 				message = "<html>Cannot connect to KeePassXC. Check that:<br>" +
 					"1) KeePassXC is open, and<br>" +
 					"2)<a href=\"https://github.com/abextm/keepassxc-runelite\">Browser Integration</a> is enabled<br>";
-			}
-			catch (IOException e)
-			{
+			} catch(IOException e) {
 				ex = e;
 				message = e.toString();
-			}
-			catch (Throwable e)
-			{
+			} catch(Throwable e) {
 				log.warn("error connecting to KeePassXC", e);
 				return;
 			}
@@ -105,26 +90,22 @@ public class KeePassXcPanel extends PluginPanel
 		t.start();
 	}
 
-	public void open(GetLogins.Response logins)
-	{
+	public void open(GetLogins.Response logins) {
 		SwingUtil.fastRemoveAll(this);
 		setLayout(new DynamicGridLayout(0, 1, 0, 0));
 		boolean hideUsernames = client.getPreferences().getHideUsername() && config.hideUsernames();
 
 		String defaultTitle = config.defaultTitle().trim();
 
-		for (GetLogins.Entry e : logins.getEntries())
-		{
-			if (!defaultTitle.isEmpty() && e.getName().trim().equalsIgnoreCase(defaultTitle))
-			{
+		for(GetLogins.Entry e : logins.getEntries()) {
+			if(!defaultTitle.isEmpty() && e.getName().trim().equalsIgnoreCase(defaultTitle)) {
 				client.setPassword(e.getPassword());
 				client.setUsername(e.getLogin());
 			}
 
 			String name = hideUsernames ? e.getName() : e.getLogin();
 			JButton b = new JButton(name);
-			b.addActionListener(_e ->
-			{
+			b.addActionListener(_e -> {
 				client.setPassword(e.getPassword());
 				client.setUsername(e.getLogin());
 			});
@@ -133,8 +114,7 @@ public class KeePassXcPanel extends PluginPanel
 		open();
 	}
 
-	public void open(String error)
-	{
+	public void open(String error) {
 		SwingUtil.fastRemoveAll(this);
 		setLayout(new BorderLayout());
 
@@ -154,18 +134,15 @@ public class KeePassXcPanel extends PluginPanel
 		open();
 	}
 
-	private void open()
-	{
+	private void open() {
 		revalidate();
 		clientToolbar.addNavigation(button);
-		if (!button.isSelected() && config.autoOpenPanel())
-		{
+		if(!button.isSelected() && config.autoOpenPanel()) {
 			SwingUtilities.invokeLater(() -> button.getOnSelect().run());
 		}
 	}
 
-	public void close()
-	{
+	public void close() {
 		// clientui doesn't unset selected if we close the panel by removing the navbutton
 		button.setSelected(false);
 		clientToolbar.removeNavigation(button);

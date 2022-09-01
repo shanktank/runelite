@@ -14,11 +14,8 @@ import net.runelite.client.plugins.PluginDescriptor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@PluginDescriptor(
-	name = "KeePassXC"
-)
-public class KeePassXcPlugin extends Plugin
-{
+@PluginDescriptor(name = "KeePassXC")
+public class KeePassXcPlugin extends Plugin {
 	@Inject
 	private Client client;
 
@@ -31,8 +28,7 @@ public class KeePassXcPlugin extends Plugin
 	private KeePassXcPanel panel;
 
 	@Override
-	public void startUp()
-	{
+	public void startUp() {
 		panel = injector.getInstance(KeePassXcPanel.class);
 
 		lastLoginState = -1;
@@ -40,8 +36,7 @@ public class KeePassXcPlugin extends Plugin
 	}
 
 	@Override
-	public void shutDown()
-	{
+	public void shutDown() {
 		panel.close();
 		isTicking = false;
 	}
@@ -61,28 +56,21 @@ public class KeePassXcPlugin extends Plugin
 		updatePanel(ev.getGameState());
 	}
 
-	private void updatePanel(GameState gs)
-	{
-		SwingUtilities.invokeLater(() ->
-		{
-			switch (gs)
-			{
+	private void updatePanel(GameState gs) {
+		SwingUtilities.invokeLater(() -> {
+			switch(gs) {
 				case LOGIN_SCREEN:
 				case LOGIN_SCREEN_AUTHENTICATOR:
-					if (!isTicking)
-					{
+					if(!isTicking) {
 						isTicking = true;
-						clientThread.invokeLater(() ->
-						{
-							if (!isTicking)
-							{
+						clientThread.invokeLater(() -> {
+							if (!isTicking) {
 								SwingUtilities.invokeLater(() -> onLoginStateChanged(-1));
 								return true;
 							}
 
 							int loginState = client.getLoginIndex();
-							if (loginState != lastLoginState)
-							{
+							if(loginState != lastLoginState) {
 								lastLoginState = loginState;
 								SwingUtilities.invokeLater(() -> onLoginStateChanged(loginState));
 							}
@@ -98,14 +86,10 @@ public class KeePassXcPlugin extends Plugin
 		});
 	}
 
-	private void onLoginStateChanged(int loginState)
-	{
-		if (loginState == 2)
-		{
+	private void onLoginStateChanged(int loginState) {
+		if(loginState == 2) {
 			panel.load();
-		}
-		else
-		{
+		} else {
 			panel.close();
 		}
 	}

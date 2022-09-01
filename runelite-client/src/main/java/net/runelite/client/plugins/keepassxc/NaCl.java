@@ -1,6 +1,7 @@
 package net.runelite.client.plugins.keepassxc;
 
-import net.runelite.client.plugins.keepassxc.curve25519xsalsa20poly1305;
+import net.runelite.client.plugins.keepassxc.crypto.*;
+
 import java.util.Formatter;
 
 public class NaCl {

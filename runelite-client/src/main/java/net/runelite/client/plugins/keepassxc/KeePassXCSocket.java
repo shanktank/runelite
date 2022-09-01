@@ -1,17 +1,11 @@
 package net.runelite.client.plugins.keepassxc;
 
-import net.runelite.client.plugins.keepassxc.Associate;
-import net.runelite.client.plugins.keepassxc.ChangePublicKeys;
-import net.runelite.client.plugins.keepassxc.GetDatabaseHash;
-import net.runelite.client.plugins.keepassxc.TestAssociate;
-import net.runelite.client.plugins.keepassxc.ProxyPathResolver;
 import com.google.common.io.LittleEndianDataInputStream;
 import com.google.common.io.LittleEndianDataOutputStream;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import net.runelite.client.plugins.keepassxc.NaCl;
-import net.runelite.client.plugins.keepassxc.curve25519xsalsa20poly1305;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +21,7 @@ import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.RuneLite;
+import net.runelite.client.plugins.keepassxc.crypto.curve25519xsalsa20poly1305;
 
 // this whole thing is a trainwreck
 // especially jnacl, which takes arguments in the wrong order, gives you the wrong output
