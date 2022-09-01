@@ -8,7 +8,7 @@ import com.google.gson.reflect.TypeToken;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.RuneLite;
-import net.runelite.client.plugins.keepassxc.NaCl;
+import net.runelite.client.plugins.keepassxc.crypto.NaCl;
 import net.runelite.client.plugins.keepassxc.crypto.curve25519xsalsa20poly1305;
 import net.runelite.client.plugins.keepassxc.proto.msg.Associate;
 import net.runelite.client.plugins.keepassxc.proto.msg.ChangePublicKeys;

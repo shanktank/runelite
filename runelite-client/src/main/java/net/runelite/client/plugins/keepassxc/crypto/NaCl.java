@@ -1,4 +1,4 @@
-package net.runelite.client.plugins.keepassxc;
+package net.runelite.client.plugins.keepassxc.crypto;
 
 import net.runelite.client.plugins.keepassxc.crypto.*;
 
