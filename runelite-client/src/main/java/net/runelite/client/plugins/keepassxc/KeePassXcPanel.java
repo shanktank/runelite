@@ -1,10 +1,5 @@
 package net.runelite.client.plugins.keepassxc;
 
-//import net.runelite.client.plugins.keepassxc.DatabaseClosedException;
-//import net.runelite.client.plugins.keepassxc.GetLogins;
-//import net.runelite.client.plugins.keepassxc.IOTimeoutException;
-//import net.runelite.client.plugins.keepassxc.KeePassXCSocket;
-//import net.runelite.client.plugins.keepassxc.NoLoginsFound;
 import java.awt.BorderLayout;
 import java.io.IOException;
 import javax.inject.Inject;
@@ -14,6 +9,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
+import net.runelite.client.plugins.keepassxc.proto.DatabaseClosedException;
+import net.runelite.client.plugins.keepassxc.proto.IOTimeoutException;
+import net.runelite.client.plugins.keepassxc.proto.KeePassXCSocket;
+import net.runelite.client.plugins.keepassxc.proto.NoLoginsFound;
+import net.runelite.client.plugins.keepassxc.proto.msg.GetLogins;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.DynamicGridLayout;
 import net.runelite.client.ui.FontManager;

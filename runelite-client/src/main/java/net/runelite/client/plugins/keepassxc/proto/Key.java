@@ -1,4 +1,4 @@
-package net.runelite.client.plugins.keepassxc;
+package net.runelite.client.plugins.keepassxc.proto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

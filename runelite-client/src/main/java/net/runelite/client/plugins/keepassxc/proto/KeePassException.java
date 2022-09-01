@@ -1,7 +1,8 @@
-package net.runelite.client.plugins.keepassxc;
+package net.runelite.client.plugins.keepassxc.proto;
+
+import lombok.Getter;
 
 import java.io.IOException;
-import lombok.Getter;
 
 public class KeePassException extends IOException
 {

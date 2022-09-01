@@ -1,10 +1,20 @@
-package net.runelite.client.plugins.keepassxc;
+package net.runelite.client.plugins.keepassxc.proto;
 
 import com.google.common.io.LittleEndianDataInputStream;
 import com.google.common.io.LittleEndianDataOutputStream;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import net.runelite.client.RuneLite;
+import net.runelite.client.plugins.keepassxc.NaCl;
+import net.runelite.client.plugins.keepassxc.crypto.curve25519xsalsa20poly1305;
+import net.runelite.client.plugins.keepassxc.proto.msg.Associate;
+import net.runelite.client.plugins.keepassxc.proto.msg.ChangePublicKeys;
+import net.runelite.client.plugins.keepassxc.proto.msg.GetDatabaseHash;
+import net.runelite.client.plugins.keepassxc.proto.msg.TestAssociate;
+import net.runelite.client.plugins.keepassxc.proto.path.ProxyPathResolver;
 
 import java.io.Closeable;
 import java.io.File;
@@ -13,15 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import net.runelite.client.RuneLite;
-import net.runelite.client.plugins.keepassxc.crypto.curve25519xsalsa20poly1305;
+import java.util.*;
 
 // this whole thing is a trainwreck
 // especially jnacl, which takes arguments in the wrong order, gives you the wrong output

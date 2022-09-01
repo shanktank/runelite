@@ -1,8 +1,8 @@
 package net.runelite.client.plugins.keepassxc.proto.msg;
 
-import abex.os.keepassxc.proto.Key;
 import lombok.Builder;
 import lombok.Data;
+import net.runelite.client.plugins.keepassxc.proto.Key;
 
 import java.util.Collection;
 import java.util.List;
