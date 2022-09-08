@@ -30,10 +30,8 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import javax.inject.Inject;
 import net.runelite.api.Client;
-import net.runelite.api.EquipmentInventorySlot;
 import net.runelite.api.GameObject;
 import net.runelite.api.InventoryID;
-import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.ItemID;
 import net.runelite.api.Point;
@@ -62,7 +60,7 @@ class BlastFurnaceClickBoxOverlay extends Overlay
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		int dispenserState = client.getVar(Varbits.BAR_DISPENSER);
+		int dispenserState = client.getVarbitValue(Varbits.BAR_DISPENSER);
 
 		if (config.showConveyorBelt() && plugin.getConveyorBelt() != null)
 		{
@@ -89,16 +87,7 @@ class BlastFurnaceClickBoxOverlay extends Overlay
 			return false;
 		}
 
-		Item[] items = equipmentContainer.getItems();
-		int idx = EquipmentInventorySlot.GLOVES.getSlotIdx();
-
-		if (items == null || idx >= items.length)
-		{
-			return false;
-		}
-
-		Item glove = items[idx];
-		return glove != null && glove.getId() == ItemID.ICE_GLOVES;
+		return (equipmentContainer.contains(ItemID.ICE_GLOVES) || equipmentContainer.contains(ItemID.SMITHS_GLOVES_I));
 	}
 
 	private void renderObject(GameObject object, Graphics2D graphics, Color color)
@@ -122,7 +111,7 @@ class BlastFurnaceClickBoxOverlay extends Overlay
 					graphics.setColor(color);
 				}
 				graphics.draw(objectClickbox);
-				graphics.setColor(new Color(0xFF, 0, 0, 20));
+				graphics.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 20));
 				graphics.fill(objectClickbox);
 			}
 		}

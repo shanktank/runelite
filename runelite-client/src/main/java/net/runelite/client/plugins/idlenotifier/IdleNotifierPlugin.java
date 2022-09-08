@@ -32,7 +32,6 @@ import java.util.Arrays;
 import java.util.List;
 import javax.inject.Inject;
 import net.runelite.api.Actor;
-import net.runelite.api.AnimationID;
 import static net.runelite.api.AnimationID.*;
 import net.runelite.api.Client;
 import net.runelite.api.Constants;
@@ -61,14 +60,13 @@ import net.runelite.client.plugins.PluginDescriptor;
 @PluginDescriptor(
 	name = "Idle Notifier",
 	description = "Send a notification when going idle, or when HP/Prayer reaches a threshold",
-	tags = {"health", "hitpoints", "notifications", "prayer"}
+	tags = {"health", "hitpoints", "notifications", "prayer"},
+	enabledByDefault = false
 )
 public class IdleNotifierPlugin extends Plugin
 {
-	// This must be more than 500 client ticks (10 seconds) before you get AFK kicked
-	private static final int LOGOUT_WARNING_MILLIS = (4 * 60 + 40) * 1000; // 4 minutes and 40 seconds
+	private static final int IDLE_LOGOUT_WARNING_BUFFER = 20_000 / Constants.CLIENT_TICK_LENGTH;
 	private static final int COMBAT_WARNING_MILLIS = 19 * 60 * 1000; // 19 minutes
-	private static final int LOGOUT_WARNING_CLIENT_TICKS = LOGOUT_WARNING_MILLIS / Constants.CLIENT_TICK_LENGTH;
 	private static final int COMBAT_WARNING_CLIENT_TICKS = COMBAT_WARNING_MILLIS / Constants.CLIENT_TICK_LENGTH;
 
 	private static final int HIGHEST_MONSTER_ATTACK_SPEED = 8; // Except Scarab Mage, but they are with other monsters
@@ -86,7 +84,7 @@ public class IdleNotifierPlugin extends Plugin
 	private IdleNotifierConfig config;
 
 	private Instant lastAnimating;
-	private int lastAnimation = AnimationID.IDLE;
+	private int lastAnimation = IDLE;
 	private Instant lastInteracting;
 	private Actor lastInteract;
 	private Instant lastMoving;
@@ -94,6 +92,8 @@ public class IdleNotifierPlugin extends Plugin
 	private boolean notifyPosition = false;
 	private boolean notifyHitpoints = true;
 	private boolean notifyPrayer = true;
+	private boolean shouldNotifyLowEnergy = false;
+	private boolean shouldNotifyHighEnergy = false;
 	private boolean notifyOxygen = true;
 	private boolean notifyIdleLogout = true;
 	private boolean notify6HourLogout = true;
@@ -107,6 +107,13 @@ public class IdleNotifierPlugin extends Plugin
 	IdleNotifierConfig provideConfig(ConfigManager configManager)
 	{
 		return configManager.getConfig(IdleNotifierConfig.class);
+	}
+
+	@Override
+	protected void startUp()
+	{
+		// can't tell when 6hr will be if enabled while already logged in
+		sixHourWarningTime = null;
 	}
 
 	@Subscribe
@@ -137,14 +144,16 @@ public class IdleNotifierPlugin extends Plugin
 			case WOODCUTTING_RUNE:
 			case WOODCUTTING_GILDED:
 			case WOODCUTTING_DRAGON:
+			case WOODCUTTING_DRAGON_OR:
 			case WOODCUTTING_INFERNAL:
 			case WOODCUTTING_3A_AXE:
 			case WOODCUTTING_CRYSTAL:
+			case WOODCUTTING_TRAILBLAZER:
 			/* Cooking(Fire, Range) */
 			case COOKING_FIRE:
 			case COOKING_RANGE:
 			case COOKING_WINE:
-			/* Crafting(Gem Cutting, Glassblowing, Spinning, Battlestaves, Pottery) */
+			/* Crafting(Gem Cutting, Glassblowing, Spinning, Weaving, Battlestaves, Pottery) */
 			case GEM_CUTTING_OPAL:
 			case GEM_CUTTING_JADE:
 			case GEM_CUTTING_REDTOPAZ:
@@ -155,6 +164,7 @@ public class IdleNotifierPlugin extends Plugin
 			case GEM_CUTTING_AMETHYST:
 			case CRAFTING_GLASSBLOWING:
 			case CRAFTING_SPINNING:
+			case CRAFTING_LOOM:
 			case CRAFTING_BATTLESTAVES:
 			case CRAFTING_LEATHER:
 			case CRAFTING_POTTERS_WHEEL:
@@ -175,8 +185,17 @@ public class IdleNotifierPlugin extends Plugin
 			case FLETCHING_STRING_MAGIC_LONGBOW:
 			case FLETCHING_ATTACH_FEATHERS_TO_ARROWSHAFT:
 			case FLETCHING_ATTACH_HEADS:
+			case FLETCHING_ATTACH_BOLT_TIPS_TO_BRONZE_BOLT:
+			case FLETCHING_ATTACH_BOLT_TIPS_TO_IRON_BROAD_BOLT:
+			case FLETCHING_ATTACH_BOLT_TIPS_TO_BLURITE_BOLT:
+			case FLETCHING_ATTACH_BOLT_TIPS_TO_STEEL_BOLT:
+			case FLETCHING_ATTACH_BOLT_TIPS_TO_MITHRIL_BOLT:
+			case FLETCHING_ATTACH_BOLT_TIPS_TO_ADAMANT_BOLT:
+			case FLETCHING_ATTACH_BOLT_TIPS_TO_RUNE_BOLT:
+			case FLETCHING_ATTACH_BOLT_TIPS_TO_DRAGON_BOLT:
 			/* Smithing(Anvil, Furnace, Cannonballs */
 			case SMITHING_ANVIL:
+			case SMITHING_IMCANDO_HAMMER:
 			case SMITHING_SMELTING:
 			case SMITHING_CANNONBALL:
 			/* Fishing */
@@ -189,11 +208,21 @@ public class IdleNotifierPlugin extends Plugin
 			case FISHING_HARPOON:
 			case FISHING_BARBTAIL_HARPOON:
 			case FISHING_DRAGON_HARPOON:
+			case FISHING_DRAGON_HARPOON_OR:
 			case FISHING_INFERNAL_HARPOON:
 			case FISHING_CRYSTAL_HARPOON:
+			case FISHING_TRAILBLAZER_HARPOON:
 			case FISHING_OILY_ROD:
 			case FISHING_KARAMBWAN:
 			case FISHING_BAREHAND:
+			case FISHING_PEARL_ROD:
+			case FISHING_PEARL_FLY_ROD:
+			case FISHING_PEARL_BARBARIAN_ROD:
+			case FISHING_PEARL_ROD_2:
+			case FISHING_PEARL_FLY_ROD_2:
+			case FISHING_PEARL_BARBARIAN_ROD_2:
+			case FISHING_PEARL_OILY_ROD:
+			case FISHING_BARBARIAN_ROD:
 			/* Mining(Normal) */
 			case MINING_BRONZE_PICKAXE:
 			case MINING_IRON_PICKAXE:
@@ -206,9 +235,13 @@ public class IdleNotifierPlugin extends Plugin
 			case MINING_DRAGON_PICKAXE:
 			case MINING_DRAGON_PICKAXE_UPGRADED:
 			case MINING_DRAGON_PICKAXE_OR:
+			case MINING_DRAGON_PICKAXE_OR_TRAILBLAZER:
 			case MINING_INFERNAL_PICKAXE:
 			case MINING_3A_PICKAXE:
 			case MINING_CRYSTAL_PICKAXE:
+			case MINING_TRAILBLAZER_PICKAXE:
+			case MINING_TRAILBLAZER_PICKAXE_2:
+			case MINING_TRAILBLAZER_PICKAXE_3:
 			case DENSE_ESSENCE_CHIPPING:
 			case DENSE_ESSENCE_CHISELING:
 			/* Mining(Motherlode) */
@@ -223,9 +256,11 @@ public class IdleNotifierPlugin extends Plugin
 			case MINING_MOTHERLODE_DRAGON:
 			case MINING_MOTHERLODE_DRAGON_UPGRADED:
 			case MINING_MOTHERLODE_DRAGON_OR:
+			case MINING_MOTHERLODE_DRAGON_OR_TRAILBLAZER:
 			case MINING_MOTHERLODE_INFERNAL:
 			case MINING_MOTHERLODE_3A:
 			case MINING_MOTHERLODE_CRYSTAL:
+			case MINING_MOTHERLODE_TRAILBLAZER:
 			/* Herblore */
 			case HERBLORE_PESTLE_AND_MORTAR:
 			case HERBLORE_POTIONMAKING:
@@ -239,8 +274,13 @@ public class IdleNotifierPlugin extends Plugin
 			case MAGIC_ENCHANTING_AMULET_1:
 			case MAGIC_ENCHANTING_AMULET_2:
 			case MAGIC_ENCHANTING_AMULET_3:
+			case MAGIC_ENCHANTING_BOLTS:
 			/* Prayer */
 			case USING_GILDED_ALTAR:
+			case ECTOFUNTUS_FILL_SLIME_BUCKET:
+			case ECTOFUNTUS_INSERT_BONES:
+			case ECTOFUNTUS_GRIND_BONES:
+			case ECTOFUNTUS_EMPTY_BIN:
 			/* Farming */
 			case FARMING_MIX_ULTRACOMPOST:
 			case FARMING_HARVEST_BUSH:
@@ -252,6 +292,7 @@ public class IdleNotifierPlugin extends Plugin
 			case PISCARILIUS_CRANE_REPAIR:
 			case HOME_MAKE_TABLET:
 			case SAND_COLLECTION:
+			case LOOKING_INTO:
 				resetTimers();
 				lastAnimation = animation;
 				lastAnimating = Instant.now();
@@ -363,9 +404,7 @@ public class IdleNotifierPlugin extends Plugin
 		}
 
 		final Hitsplat hitsplat = event.getHitsplat();
-
-		if (hitsplat.getHitsplatType() == Hitsplat.HitsplatType.DAMAGE_ME
-			|| hitsplat.getHitsplatType() == Hitsplat.HitsplatType.BLOCK_ME)
+		if (hitsplat.isMine())
 		{
 			lastCombatCountdown = HIGHEST_MONSTER_ATTACK_SPEED;
 		}
@@ -406,60 +445,70 @@ public class IdleNotifierPlugin extends Plugin
 
 		if (config.logoutIdle() && checkIdleLogout())
 		{
-			notifier.notify("[" + local.getName() + "] is about to log out from idling too long!");
+			notifier.notify("You are about to log out from idling too long!");
 		}
 
 		if (check6hrLogout())
 		{
-			notifier.notify("[" + local.getName() + "] is about to log out from being online for 6 hours!");
+			notifier.notify("You are about to log out from being online for 6 hours!");
 		}
 
 		if (config.animationIdle() && checkAnimationIdle(waitDuration, local))
 		{
-			notifier.notify("[" + local.getName() + "] is now idle!");
+			notifier.notify("You are now idle!");
 		}
 
 		if (config.movementIdle() && checkMovementIdle(waitDuration, local))
 		{
-			notifier.notify("[" + local.getName() + "] has stopped moving!");
+			notifier.notify("You have stopped moving!");
 		}
 
 		if (config.interactionIdle() && checkInteractionIdle(waitDuration, local))
 		{
 			if (lastInteractWasCombat)
 			{
-				notifier.notify("[" + local.getName() + "] is now out of combat!");
+				notifier.notify("You are now out of combat!");
 			}
 			else
 			{
-				notifier.notify("[" + local.getName() + "] is now idle!");
+				notifier.notify("You are now idle!");
 			}
 		}
 
 		if (checkLowHitpoints())
 		{
-			notifier.notify("[" + local.getName() + "] has low hitpoints!");
+			notifier.notify("You have low hitpoints!");
 		}
 
 		if (checkLowPrayer())
 		{
-			notifier.notify("[" + local.getName() + "] has low prayer!");
+			notifier.notify("You have low prayer!");
+		}
+
+		if (checkLowEnergy())
+		{
+			notifier.notify("You have low run energy!");
+		}
+
+		if (checkHighEnergy())
+		{
+			notifier.notify("You have restored run energy!");
 		}
 
 		if (checkLowOxygen())
 		{
-			notifier.notify("[" + local.getName() + "] has low oxygen!");
+			notifier.notify("You have low oxygen!");
 		}
 
 		if (checkFullSpecEnergy())
 		{
-			notifier.notify("[" + local.getName() + "] has restored spec energy!");
+			notifier.notify("You have restored spec energy!");
 		}
 	}
 
 	private boolean checkFullSpecEnergy()
 	{
-		int currentSpecEnergy = client.getVar(VarPlayer.SPECIAL_ATTACK_PERCENT);
+		int currentSpecEnergy = client.getVarpValue(VarPlayer.SPECIAL_ATTACK_PERCENT);
 
 		int threshold = config.getSpecEnergyThreshold() * 10;
 		if (threshold == 0)
@@ -482,7 +531,7 @@ public class IdleNotifierPlugin extends Plugin
 		{
 			return false;
 		}
-		if (config.getOxygenThreshold() >= client.getVar(Varbits.OXYGEN_LEVEL) * 0.1)
+		if (config.getOxygenThreshold() >= client.getVarbitValue(Varbits.OXYGEN_LEVEL) * 0.1)
 		{
 			if (!notifyOxygen)
 			{
@@ -505,7 +554,7 @@ public class IdleNotifierPlugin extends Plugin
 		}
 		if (client.getRealSkillLevel(Skill.HITPOINTS) > config.getHitpointsThreshold())
 		{
-			if (client.getBoostedSkillLevel(Skill.HITPOINTS) + client.getVar(Varbits.NMZ_ABSORPTION) <= config.getHitpointsThreshold())
+			if (client.getBoostedSkillLevel(Skill.HITPOINTS) + client.getVarbitValue(Varbits.NMZ_ABSORPTION) <= config.getHitpointsThreshold())
 			{
 				if (!notifyHitpoints)
 				{
@@ -547,6 +596,52 @@ public class IdleNotifierPlugin extends Plugin
 		return false;
 	}
 
+	private boolean checkLowEnergy()
+	{
+		if (config.getLowEnergyThreshold() >= 100)
+		{
+			return false;
+		}
+
+		if (client.getEnergy() <= config.getLowEnergyThreshold())
+		{
+			if (shouldNotifyLowEnergy)
+			{
+				shouldNotifyLowEnergy = false;
+				return true;
+			}
+		}
+		else
+		{
+			shouldNotifyLowEnergy = true;
+		}
+
+		return false;
+	}
+
+	private boolean checkHighEnergy()
+	{
+		if (config.getHighEnergyThreshold() == 0)
+		{
+			return false;
+		}
+
+		if (client.getEnergy() >= config.getHighEnergyThreshold())
+		{
+			if (shouldNotifyHighEnergy)
+			{
+				shouldNotifyHighEnergy = false;
+				return true;
+			}
+		}
+		else
+		{
+			shouldNotifyHighEnergy = true;
+		}
+
+		return false;
+	}
+
 	private boolean checkInteractionIdle(Duration waitDuration, Player local)
 	{
 		if (lastInteract == null)
@@ -583,13 +678,9 @@ public class IdleNotifierPlugin extends Plugin
 	private boolean checkIdleLogout()
 	{
 		// Check clientside AFK first, because this is required for the server to disconnect you for being first
-		int idleClientTicks = client.getKeyboardIdleTicks();
-		if (client.getMouseIdleTicks() < idleClientTicks)
-		{
-			idleClientTicks = client.getMouseIdleTicks();
-		}
+		final int idleClientTicks = Math.min(client.getKeyboardIdleTicks(), client.getMouseIdleTicks());
 
-		if (idleClientTicks < LOGOUT_WARNING_CLIENT_TICKS)
+		if (idleClientTicks < client.getIdleTimeout() - IDLE_LOGOUT_WARNING_BUFFER)
 		{
 			notifyIdleLogout = true;
 			return false;

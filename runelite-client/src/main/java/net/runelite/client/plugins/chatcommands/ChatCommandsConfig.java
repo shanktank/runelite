@@ -157,23 +157,57 @@ public interface ChatCommandsConfig extends Config
 
 	@ConfigItem(
 		position = 11,
+		keyName = "lp",
+		name = "LP Command",
+		description = "Configures whether the League Points command is enabled<br> !lp"
+	)
+	default boolean lp()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		position = 12,
+		keyName = "sw",
+		name = "SW Command",
+		description = "Configures whether the Soul Wars Zeal command is enabled<br> !sw"
+	)
+	default boolean sw()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		position = 13,
+		keyName = "pets",
+		name = "Pets Command",
+		description = "Configures whether the player pet list command is enabled<br> !pets<br>" +
+			" Note: Update your pet list by looking at the All Pets tab in the Collection Log"
+	)
+	default boolean pets()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		position = 20,
 		keyName = "clearSingleWord",
 		name = "Clear Single Word",
 		description = "Enable hot key to clear single word at a time"
 	)
 	default Keybind clearSingleWord()
 	{
-		return new Keybind(KeyEvent.VK_W, InputEvent.CTRL_DOWN_MASK);
+		return new Keybind(KeyEvent.VK_BACK_SPACE, InputEvent.CTRL_DOWN_MASK);
 	}
 
 	@ConfigItem(
-		position = 12,
+		position = 21,
 		keyName = "clearEntireChatBox",
 		name = "Clear Chat Box",
 		description = "Enable hotkey to clear entire chat box"
 	)
 	default Keybind clearChatBox()
 	{
-		return new Keybind(KeyEvent.VK_BACK_SPACE, InputEvent.CTRL_DOWN_MASK);
+		return Keybind.NOT_SET;
 	}
 }

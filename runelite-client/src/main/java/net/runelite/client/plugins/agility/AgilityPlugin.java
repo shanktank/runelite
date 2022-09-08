@@ -24,12 +24,15 @@
  */
 package net.runelite.client.plugins.agility;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.inject.Provides;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.inject.Inject;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -37,34 +40,35 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.ItemID;
 import static net.runelite.api.ItemID.AGILITY_ARENA_TICKET;
+import net.runelite.api.MenuAction;
+import net.runelite.api.NPC;
+import net.runelite.api.NullNpcID;
 import net.runelite.api.Player;
-import net.runelite.api.Skill;
 import static net.runelite.api.Skill.AGILITY;
 import net.runelite.api.Tile;
 import net.runelite.api.TileItem;
 import net.runelite.api.TileObject;
 import net.runelite.api.coords.WorldPoint;
-import net.runelite.api.events.DecorativeObjectChanged;
 import net.runelite.api.events.DecorativeObjectDespawned;
 import net.runelite.api.events.DecorativeObjectSpawned;
-import net.runelite.api.events.GameObjectChanged;
 import net.runelite.api.events.GameObjectDespawned;
 import net.runelite.api.events.GameObjectSpawned;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
-import net.runelite.api.events.GroundObjectChanged;
 import net.runelite.api.events.GroundObjectDespawned;
 import net.runelite.api.events.GroundObjectSpawned;
 import net.runelite.api.events.ItemDespawned;
 import net.runelite.api.events.ItemSpawned;
+import net.runelite.api.events.NpcDespawned;
+import net.runelite.api.events.NpcSpawned;
 import net.runelite.api.events.StatChanged;
-import net.runelite.api.events.WallObjectChanged;
 import net.runelite.api.events.WallObjectDespawned;
 import net.runelite.api.events.WallObjectSpawned;
 import net.runelite.client.Notifier;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.events.OverlayMenuClicked;
 import net.runelite.client.game.AgilityShortcut;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.Plugin;
@@ -73,24 +77,32 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.xptracker.XpTrackerPlugin;
 import net.runelite.client.plugins.xptracker.XpTrackerService;
 import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.ui.overlay.OverlayMenuEntry;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 
 @PluginDescriptor(
 	name = "Agility",
 	description = "Show helpful information about agility courses and obstacles",
-	tags = {"grace", "marks", "overlay", "shortcuts", "skilling", "traps"}
+	tags = {"grace", "marks", "overlay", "shortcuts", "skilling", "traps", "sepulchre"}
 )
 @PluginDependency(XpTrackerPlugin.class)
 @Slf4j
 public class AgilityPlugin extends Plugin
 {
 	private static final int AGILITY_ARENA_REGION_ID = 11157;
+	private static final Set<Integer> SEPULCHRE_NPCS = ImmutableSet.of(
+		NullNpcID.NULL_9672, NullNpcID.NULL_9673, NullNpcID.NULL_9674,  // arrows
+		NullNpcID.NULL_9669, NullNpcID.NULL_9670, NullNpcID.NULL_9671   // swords
+	);
 
 	@Getter
 	private final Map<TileObject, Obstacle> obstacles = new HashMap<>();
 
 	@Getter
 	private final List<Tile> marksOfGrace = new ArrayList<>();
+
+	@Getter
+	private final Set<NPC> npcs = new HashSet<>();
 
 	@Inject
 	private OverlayManager overlayManager;
@@ -142,7 +154,7 @@ public class AgilityPlugin extends Plugin
 	{
 		overlayManager.add(agilityOverlay);
 		overlayManager.add(lapCounterOverlay);
-		agilityLevel = client.getBoostedSkillLevel(Skill.AGILITY);
+		agilityLevel = client.getBoostedSkillLevel(AGILITY);
 	}
 
 	@Override
@@ -155,6 +167,19 @@ public class AgilityPlugin extends Plugin
 		session = null;
 		agilityLevel = 0;
 		stickTile = null;
+		npcs.clear();
+	}
+
+	@Subscribe
+	public void onOverlayMenuClicked(OverlayMenuClicked overlayMenuClicked)
+	{
+		OverlayMenuEntry overlayMenuEntry = overlayMenuClicked.getEntry();
+		if (overlayMenuEntry.getMenuAction() == MenuAction.RUNELITE_OVERLAY
+			&& overlayMenuClicked.getOverlay() == lapCounterOverlay
+			&& overlayMenuClicked.getEntry().getOption().equals(LapCounterOverlay.AGILITY_RESET))
+		{
+			session = null;
+		}
 	}
 
 	@Subscribe
@@ -167,6 +192,7 @@ public class AgilityPlugin extends Plugin
 				session = null;
 				lastArenaTicketPosition = null;
 				removeAgilityArenaTimer();
+				npcs.clear();
 				break;
 			case LOADING:
 				marksOfGrace.clear();
@@ -330,12 +356,6 @@ public class AgilityPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onGameObjectChanged(GameObjectChanged event)
-	{
-		onTileObject(event.getTile(), event.getPrevious(), event.getGameObject());
-	}
-
-	@Subscribe
 	public void onGameObjectDespawned(GameObjectDespawned event)
 	{
 		onTileObject(event.getTile(), event.getGameObject(), null);
@@ -345,12 +365,6 @@ public class AgilityPlugin extends Plugin
 	public void onGroundObjectSpawned(GroundObjectSpawned event)
 	{
 		onTileObject(event.getTile(), null, event.getGroundObject());
-	}
-
-	@Subscribe
-	public void onGroundObjectChanged(GroundObjectChanged event)
-	{
-		onTileObject(event.getTile(), event.getPrevious(), event.getGroundObject());
 	}
 
 	@Subscribe
@@ -366,12 +380,6 @@ public class AgilityPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onWallObjectChanged(WallObjectChanged event)
-	{
-		onTileObject(event.getTile(), event.getPrevious(), event.getWallObject());
-	}
-
-	@Subscribe
 	public void onWallObjectDespawned(WallObjectDespawned event)
 	{
 		onTileObject(event.getTile(), event.getWallObject(), null);
@@ -381,12 +389,6 @@ public class AgilityPlugin extends Plugin
 	public void onDecorativeObjectSpawned(DecorativeObjectSpawned event)
 	{
 		onTileObject(event.getTile(), null, event.getDecorativeObject());
-	}
-
-	@Subscribe
-	public void onDecorativeObjectChanged(DecorativeObjectChanged event)
-	{
-		onTileObject(event.getTile(), event.getPrevious(), event.getDecorativeObject());
 	}
 
 	@Subscribe
@@ -404,9 +406,12 @@ public class AgilityPlugin extends Plugin
 			return;
 		}
 
-		if (Obstacles.COURSE_OBSTACLE_IDS.contains(newObject.getId()) ||
+		if (Obstacles.OBSTACLE_IDS.contains(newObject.getId()) ||
+			Obstacles.PORTAL_OBSTACLE_IDS.contains(newObject.getId()) ||
 			(Obstacles.TRAP_OBSTACLE_IDS.contains(newObject.getId())
-				&& Obstacles.TRAP_OBSTACLE_REGIONS.contains(newObject.getWorldLocation().getRegionID())))
+				&& Obstacles.TRAP_OBSTACLE_REGIONS.contains(newObject.getWorldLocation().getRegionID())) ||
+			Obstacles.SEPULCHRE_OBSTACLE_IDS.contains(newObject.getId()) ||
+			Obstacles.SEPULCHRE_SKILL_OBSTACLE_IDS.contains(newObject.getId()))
 		{
 			obstacles.put(newObject, new Obstacle(tile, null));
 		}
@@ -419,6 +424,11 @@ public class AgilityPlugin extends Plugin
 			// Find the closest shortcut to this object
 			for (AgilityShortcut shortcut : Obstacles.SHORTCUT_OBSTACLE_IDS.get(newObject.getId()))
 			{
+				if (!shortcut.matches(newObject))
+				{
+					continue;
+				}
+
 				if (shortcut.getWorldLocation() == null)
 				{
 					closestShortcut = shortcut;
@@ -440,5 +450,23 @@ public class AgilityPlugin extends Plugin
 				obstacles.put(newObject, new Obstacle(tile, closestShortcut));
 			}
 		}
+	}
+
+	@Subscribe
+	public void onNpcSpawned(NpcSpawned npcSpawned)
+	{
+		NPC npc = npcSpawned.getNpc();
+
+		if (SEPULCHRE_NPCS.contains(npc.getId()))
+		{
+			npcs.add(npc);
+		}
+	}
+
+	@Subscribe
+	public void onNpcDespawned(NpcDespawned npcDespawned)
+	{
+		NPC npc = npcDespawned.getNpc();
+		npcs.remove(npc);
 	}
 }
