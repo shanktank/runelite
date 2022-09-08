@@ -2023,8 +2023,8 @@ public interface Client extends OAuthApi, GameEngine
 	 * Interfaces for NeverLogoutPlugin
 	 * @param cycles
 	 */
-	//void setMouseIdleTicks(int cycles);
-    //void setKeyboardIdleTicks(int cycles);
+	void setMouseIdleTicks(int cycles);
+    void setKeyboardIdleTicks(int cycles);
 
     /**
 	 * Set the amount of time until the client automatically logs out due to idle input.
