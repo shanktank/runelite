@@ -44,6 +44,8 @@ import net.runelite.client.util.Text;
 @Singleton
 public class PlayerIndicatorsService
 {
+	public final Client client;
+	public final PlayerIndicatorsConfig config;
 	private final Client client;
 	private final PlayerIndicatorsConfig config;
 	private final PartyService partyService;

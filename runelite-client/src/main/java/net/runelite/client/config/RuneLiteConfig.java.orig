@@ -283,7 +283,6 @@ public interface RuneLiteConfig extends Config
 		return false;
 	}
 
-<<<<<<< HEAD
 	// TODO: begin
 	@ConfigItem(
 			keyName = "mentionNotificationFocused",
@@ -296,7 +295,6 @@ public interface RuneLiteConfig extends Config
 		return false;
 	}
 	// TODO: end
-=======
 	@Alpha
 	@ConfigItem(
 		keyName = "notificationFlashColor",
@@ -309,7 +307,6 @@ public interface RuneLiteConfig extends Config
 	{
 		return new Color(255, 0, 0, 70);
 	}
->>>>>>> 7960ae92b763965f2a40937c6174b9fd1ba2d618
 
 	@ConfigItem(
 		keyName = "fontType",

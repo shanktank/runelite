@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.sound.sampled.AudioInputStream;
@@ -70,6 +72,8 @@ import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.events.NotificationFired;
 import net.runelite.client.ui.ClientUI;
 import net.runelite.client.util.OSType;
+
+import static java.util.regex.Pattern.quote;
 
 @Singleton
 @Slf4j
@@ -157,10 +161,37 @@ public class Notifier
 	{
 		eventBus.post(new NotificationFired(message, type));
 
+		// TODO: begin
+		if(type == TrayIcon.MessageType.NONE && runeLiteConfig.sendMentionNotificationWhenFocused()) {
+			Pattern usernameMatcher = null;
+			if (client.getLocalPlayer() != null && client.getLocalPlayer().getName() != null) {
+				usernameMatcher = Pattern.compile("\\b(" + quote(client.getLocalPlayer().getName()) + ")\\b", Pattern.CASE_INSENSITIVE);
+				Matcher m = usernameMatcher.matcher(message);
+				if (m.find()) {
+					switch (runeLiteConfig.notificationSound()) {
+						case NATIVE:
+							Toolkit.getDefaultToolkit().beep();
+							break;
+						case CUSTOM:
+							executorService.submit(this::playCustomSound);
+					}
+					log.debug("[DEV] Notifier.m.group(1): " + m.group(1));
+				}
+			}
+		}
+
+		log.debug("[DEV] Notifier.notify.message: " + message);
+		log.debug("[DEV] Notifier.notify.type.name(): " + type.name());
+		log.debug("[DEV] Notifier.notify.type.toString(): " + type.name());
+
 		if (!runeLiteConfig.sendNotificationsWhenFocused() && clientUI.isFocused())
+		//if (!runeLiteConfig.sendNotificationsWhenFocused() && clientUI.isFocused() && !(type == TrayIcon.MessageType.NONE && !runeLiteConfig.sendMentionNotificationWhenFocused()))
+		//if (!runeLiteConfig.sendNotificationsWhenFocused() && !runeLiteConfig.sendMentionNotificationWhenFocused() && clientUI.isFocused())
+		//if ((!runeLiteConfig.sendNotificationsWhenFocused() && clientUI.isFocused()) && !(type == TrayIcon.MessageType.NONE && !runeLiteConfig.sendMentionNotificationWhenFocused()))
 		{
 			return;
 		}
+		// TODO: end
 
 		switch (runeLiteConfig.notificationRequestFocus())
 		{

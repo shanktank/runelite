@@ -34,15 +34,12 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
-<<<<<<< HEAD
 // TODO: begin
 import java.util.EnumSet;
 import java.util.Set;
 // TODO: end
-=======
 import java.util.Map;
 import java.util.Set;
->>>>>>> 7960ae92b763965f2a40937c6174b9fd1ba2d618
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -52,13 +49,11 @@ import javax.swing.SwingUtilities;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-<<<<<<< HEAD
 import net.runelite.api.*;
 import net.runelite.api.events.*;
 import net.runelite.api.widgets.Widget;
 
 import static java.util.regex.Pattern.quote;
-=======
 import net.runelite.api.Actor;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
@@ -77,7 +72,6 @@ import net.runelite.api.events.ScriptPreFired;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetID;
->>>>>>> 7960ae92b763965f2a40937c6174b9fd1ba2d618
 import static net.runelite.api.widgets.WidgetID.BARROWS_REWARD_GROUP_ID;
 import static net.runelite.api.widgets.WidgetID.CHAMBERS_OF_XERIC_REWARD_GROUP_ID;
 import static net.runelite.api.widgets.WidgetID.CLUE_SCROLL_REWARD_GROUP_ID;
@@ -384,7 +378,6 @@ public class ScreenshotPlugin extends Plugin
 	@Subscribe
 	public void onChatMessage(ChatMessage event)
 	{
-<<<<<<< HEAD
 		// TODO: begin
 		ChatMessageType eventType = event.getType();
 		if(eventType == ChatMessageType.MODCHAT || eventType == ChatMessageType.PUBLICCHAT || eventType == ChatMessageType.FRIENDSCHAT ||
@@ -407,13 +400,11 @@ public class ScreenshotPlugin extends Plugin
 		// TODO: end
 
 		if(eventType != ChatMessageType.GAMEMESSAGE && eventType != ChatMessageType.SPAM && eventType != ChatMessageType.TRADE) {
-=======
 		if (event.getType() != ChatMessageType.GAMEMESSAGE
 			&& event.getType() != ChatMessageType.SPAM
 			&& event.getType() != ChatMessageType.TRADE
 			&& event.getType() != ChatMessageType.FRIENDSCHATNOTIFICATION)
 		{
->>>>>>> 7960ae92b763965f2a40937c6174b9fd1ba2d618
 			return;
 		}
 
