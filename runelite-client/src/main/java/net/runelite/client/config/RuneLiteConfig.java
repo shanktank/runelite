@@ -283,6 +283,19 @@ public interface RuneLiteConfig extends Config
 		return false;
 	}
 
+	// TODO: begin
+	@ConfigItem(
+			keyName = "mentionNotificationFocused",
+			name = "Send mention notifications when focused",
+			description = "Toggles mention notifications for when the client is focused",
+			position = 60
+	)
+	default boolean sendMentionNotificationWhenFocused()
+	{
+		return false;
+	}
+	// TODO: end
+
 	@Alpha
 	@ConfigItem(
 		keyName = "notificationFlashColor",

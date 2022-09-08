@@ -214,10 +214,7 @@ public interface PlayerIndicatorsConfig extends Config
 		name = "Draw tiles under players",
 		description = "Configures whether or not tiles under highlighted players should be drawn"
 	)
-	default boolean drawTiles()
-	{
-		return false;
-	}
+	default boolean drawTiles() { return false;	}
 
 	@ConfigItem(
 		position = 11,
@@ -272,5 +269,16 @@ public interface PlayerIndicatorsConfig extends Config
 	default boolean showClanChatRanks()
 	{
 		return true;
+	}
+
+	@ConfigItem(
+			position = 15,
+			keyName = "drawOwnPlayerTiles",
+			name = "Draw tiles under own player",
+			description = "Configures whether or not tiles under own highlighted player should be drawn"
+	)
+	default boolean drawOwnTiles()
+	{
+		return false;
 	}
 }

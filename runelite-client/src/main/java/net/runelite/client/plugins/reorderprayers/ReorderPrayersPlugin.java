@@ -39,6 +39,7 @@ import net.runelite.api.GameState;
 import net.runelite.api.HashTable;
 import net.runelite.api.Prayer;
 import net.runelite.api.WidgetNode;
+import net.runelite.client.events.ConfigChanged;
 import net.runelite.api.events.DraggingWidgetChanged;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.WidgetLoaded;
@@ -56,15 +57,16 @@ import net.runelite.client.menus.WidgetMenuOption;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 
+@Slf4j
 @PluginDescriptor(
 	name = "Reorder Prayers",
 	description = "Reorder the prayers displayed on the Prayer panel",
 	tags = {"bosses", "pve", "pvm"}
 )
-
-@Slf4j
 public class ReorderPrayersPlugin extends Plugin
 {
+
+>>>>>>> ae70116ae62af775fd90b3962689edc4ddd46741
 	static final String CONFIG_GROUP_KEY = "reorderprayers";
 
 	static final String CONFIG_UNLOCK_REORDERING_KEY = "unlockPrayerReordering";
@@ -222,7 +224,7 @@ public class ReorderPrayersPlugin extends Plugin
 	}
 
 	@Override
-	protected void startUp()
+	protected void startUp() //throws Exception
 	{
 		refreshPrayerTabOption();
 		prayerOrder = stringToPrayerOrder(config.prayerOrder());
@@ -230,7 +232,7 @@ public class ReorderPrayersPlugin extends Plugin
 	}
 
 	@Override
-	protected void shutDown()
+	protected void shutDown() //throws Exception
 	{
 		clearPrayerTabMenus();
 		prayerOrder = Prayer.values();
@@ -238,7 +240,7 @@ public class ReorderPrayersPlugin extends Plugin
 	}
 
 	@Subscribe
-	private void onGameStateChanged(GameStateChanged event)
+	public void onGameStateChanged(GameStateChanged event)
 	{
 		if (event.getGameState() == GameState.LOGGED_IN)
 		{
@@ -247,7 +249,7 @@ public class ReorderPrayersPlugin extends Plugin
 	}
 
 	@Subscribe
-	private void onConfigChanged(ConfigChanged event)
+	public void onConfigChanged(ConfigChanged event)
 	{
 		if (event.getGroup().equals(CONFIG_GROUP_KEY))
 		{
@@ -264,7 +266,7 @@ public class ReorderPrayersPlugin extends Plugin
 	}
 
 	@Subscribe
-	private void onWidgetLoaded(WidgetLoaded event)
+	public void onWidgetLoaded(WidgetLoaded event)
 	{
 		if (event.getGroupId() == WidgetID.PRAYER_GROUP_ID || event.getGroupId() == WidgetID.QUICK_PRAYERS_GROUP_ID)
 		{
@@ -273,7 +275,7 @@ public class ReorderPrayersPlugin extends Plugin
 	}
 
 	@Subscribe
-	private void onDraggingWidgetChanged(DraggingWidgetChanged event)
+	public void onDraggingWidgetChanged(DraggingWidgetChanged event)
 	{
 		// is dragging widget and mouse button released
 		if (event.isDraggingWidget() && client.getMouseCurrentButton() == 0)

@@ -170,7 +170,7 @@ public class RuneLiteProperties
 		}
 		System.out.println(version);
 		//return HttpUrl.get(version);
-		return HttpUrl.get(properties.get(PLUGINHUB_BASE) + "/1.8.32");
+		return HttpUrl.get(properties.uget(PLUGINHUB_BASE) + "/1.8.32");
 	}
 
 	public static String getApiBase()
@@ -187,4 +187,4 @@ public class RuneLiteProperties
 	{
 		return properties.getProperty(OSRS_TWITTER_LINK);
 	}
-}
+}u

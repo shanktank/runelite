@@ -53,20 +53,26 @@ public class PlayerIndicatorsTileOverlay extends Overlay
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		if (!config.drawTiles())
+		if(config.drawTiles())
 		{
-			return null;
+			playerIndicatorsService.forEachPlayer((player, color) ->
+			{
+				final Polygon poly = player.getCanvasTilePoly();
+
+				if (poly != null)
+				{
+					OverlayUtil.renderPolygon(graphics, poly, color);
+				}
+			});
 		}
 
-		playerIndicatorsService.forEachPlayer((player, color) ->
+		if(config.drawOwnTiles())
 		{
-			final Polygon poly = player.getCanvasTilePoly();
-
-			if (poly != null)
-			{
-				OverlayUtil.renderPolygon(graphics, poly, color);
+			final Polygon poly = playerIndicatorsService.client.getLocalPlayer().getCanvasTilePoly();
+			if (poly != null) {
+				OverlayUtil.renderPolygon(graphics, poly, playerIndicatorsService.config.getOwnPlayerColor());
 			}
-		});
+		}
 
 		return null;
 	}

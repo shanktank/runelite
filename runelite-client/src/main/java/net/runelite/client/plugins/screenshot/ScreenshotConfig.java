@@ -252,6 +252,19 @@ public interface ScreenshotConfig extends Config
 		return false;
 	}
 
+	// TODO: begin
+	@ConfigItem(
+			keyName = "mentions",
+			name = "Screenshot Mentions",
+			description = "Configures whether screenshots are taken when the player is mentioned in chat.",
+			position = 15
+	)
+	default boolean screenshotMentions()
+	{
+		return true;
+	}
+	// TODO: end
+
 	@ConfigItem(
 		keyName = "ccKick",
 		name = "Screenshot Kicks from FC",
@@ -300,12 +313,23 @@ public interface ScreenshotConfig extends Config
 		return true;
 	}
 
+	@ConfigItem(
+		keyName = "hotkey",
+		name = "Screenshot hotkey",
+		description = "When you press this key a screenshot will be taken",
+		position = 21
+	)
+	default boolean screenshotKick()
+	{
+		return false;
+	}
+
 	// TODO: begin
 	@ConfigItem(
 			keyName = "mentions",
 			name = "Screenshot Mentions",
 			description = "Configures whether screenshots are taken when the player is mentioned in chat.",
-			position = 15
+			position = 22
 	)
 	default boolean screenshotMentions()
 	{

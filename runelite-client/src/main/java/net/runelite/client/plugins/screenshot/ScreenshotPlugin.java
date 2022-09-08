@@ -35,6 +35,10 @@ import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -44,6 +48,12 @@ import javax.swing.SwingUtilities;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.*;
+import net.runelite.api.events.*;
+import net.runelite.api.widgets.Widget;
+
+import static java.util.regex.Pattern.quote;
+
 import net.runelite.api.Actor;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
@@ -75,6 +85,8 @@ import static net.runelite.api.widgets.WidgetID.THEATRE_OF_BLOOD_REWARD_GROUP_ID
 import static net.runelite.api.widgets.WidgetID.TOA_REWARD_GROUP_ID;
 import net.runelite.api.widgets.WidgetInfo;
 import static net.runelite.client.RuneLite.SCREENSHOT_DIR;
+
+import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.PlayerLootReceived;
@@ -161,6 +173,11 @@ public class ScreenshotPlugin extends Plugin
 	private boolean shouldTakeScreenshot;
 	private boolean notificationStarted;
 
+	// TODO: begin
+	private Pattern usernameMatcher = null;
+	private boolean shouldNotify = true;
+	// TODO: end
+
 	@Inject
 	private ScreenshotConfig config;
 
@@ -220,6 +237,20 @@ public class ScreenshotPlugin extends Plugin
 	{
 		return configManager.getConfig(ScreenshotConfig.class);
 	}
+
+	// TODO: begin
+	@Subscribe
+	public void onGameStateChanged(GameStateChanged event)
+	{
+		switch (event.getGameState())
+		{
+			case LOGIN_SCREEN:
+			case HOPPING:
+				usernameMatcher = null;
+				break;
+		}
+	}
+	// TODO: end
 
 	@Override
 	protected void startUp() throws Exception
@@ -360,6 +391,7 @@ public class ScreenshotPlugin extends Plugin
 	{
 		// TODO: begin
 		ChatMessageType eventType = event.getType();
+<<<<<<< HEAD
 		ChatMessageType[] eventTypes = {
 				ChatMessageType.MODCHAT, ChatMessageType.PUBLICCHAT, ChatMessageType.FRIENDSCHAT, ChatMessageType.AUTOTYPER,
 				ChatMessageType.MODAUTOTYPER, ChatMessageType.PLAYERRELATED, ChatMessageType.TENSECTIMEOUT
@@ -384,6 +416,7 @@ public class ScreenshotPlugin extends Plugin
 					log.debug(e.toString());
 				}
 			}
+			log.debug(eventType.toString());
 		}
 		// TODO: end
 
@@ -530,11 +563,9 @@ public class ScreenshotPlugin extends Plugin
 			}
 		}
 
-		if (config.screenshotDuels())
-		{
+		if (config.screenshotDuels()) {
 			Matcher m = DUEL_END_PATTERN.matcher(chatMessage);
-			if (m.find())
-			{
+			if (m.find()) {
 				String result = m.group(1);
 				String count = m.group(2).replace(",", "");
 				String fileName = "Duel " + result + " (" + count + ")";
@@ -932,7 +963,9 @@ public class ScreenshotPlugin extends Plugin
 
 		// Draw the game onto the screenshot
 		graphics.drawImage(image, gameOffsetX, gameOffsetY, null);
-		imageCapture.takeScreenshot(screenshot, fileName, subDir, config.notifyWhenTaken(), config.uploadScreenshot());
+		// TODO: begin
+		imageCapture.takeScreenshot(screenshot, fileName, subDir, config.notifyWhenTaken() && shouldNotify, config.uploadScreenshot());
+		// TODO: end
 	}
 
 	private boolean isInsideGauntlet()
