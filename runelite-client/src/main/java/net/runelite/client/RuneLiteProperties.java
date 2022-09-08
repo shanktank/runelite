@@ -97,8 +97,7 @@ public class RuneLiteProperties
 		return System.getProperty(LAUNCHER_VERSION_PROPERTY);
 	}
 
-	public static boolean isInsecureSkipTlsVerification()
-	{
+	public static boolean isInsecureSkipTlsVerification() {
 		return Boolean.getBoolean(INSECURE_SKIP_TLS_VERIFICATION_PROPERTY);
 	}
 
@@ -155,6 +154,8 @@ public class RuneLiteProperties
 			}
 		}
 
+		System.out.println("\n!!! getLatestVersion(): " + maxVersion + " !!!\n");
+
 		return maxVersion;
 	}
 
@@ -165,10 +166,11 @@ public class RuneLiteProperties
 		try {
 			version += getLatestVersion();
 		} catch(IOException e) {
-			version += "1.8.30";
+			version += "1.8.32";
 		}
 		System.out.println(version);
-		return HttpUrl.get(version);
+		//return HttpUrl.get(version);
+		return HttpUrl.get(properties.get(PLUGINHUB_BASE) + "/1.8.32");
 	}
 
 	public static String getApiBase()
