@@ -65,8 +65,6 @@ import net.runelite.client.plugins.PluginDescriptor;
 )
 public class ReorderPrayersPlugin extends Plugin
 {
-
->>>>>>> ae70116ae62af775fd90b3962689edc4ddd46741
 	static final String CONFIG_GROUP_KEY = "reorderprayers";
 
 	static final String CONFIG_UNLOCK_REORDERING_KEY = "unlockPrayerReordering";

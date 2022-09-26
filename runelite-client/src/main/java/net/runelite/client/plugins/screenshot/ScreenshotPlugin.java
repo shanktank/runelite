@@ -218,10 +218,12 @@ public class ScreenshotPlugin extends Plugin
 
 	private String kickPlayerName;
 
+	/*
 	// TODO: begin
 	private Pattern usernameMatcher = null;
 	private boolean shouldNotify = true;
 	// TODO: end
+	*/
 
 	private final HotkeyListener hotkeyListener = new HotkeyListener(() -> config.hotkey())
 	{
@@ -391,7 +393,6 @@ public class ScreenshotPlugin extends Plugin
 	{
 		// TODO: begin
 		ChatMessageType eventType = event.getType();
-<<<<<<< HEAD
 		ChatMessageType[] eventTypes = {
 				ChatMessageType.MODCHAT, ChatMessageType.PUBLICCHAT, ChatMessageType.FRIENDSCHAT, ChatMessageType.AUTOTYPER,
 				ChatMessageType.MODAUTOTYPER, ChatMessageType.PLAYERRELATED, ChatMessageType.TENSECTIMEOUT
