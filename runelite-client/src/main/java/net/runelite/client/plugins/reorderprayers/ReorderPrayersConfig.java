@@ -22,6 +22,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 package net.runelite.client.plugins.reorderprayers;
 
 import net.runelite.api.Prayer;
@@ -32,7 +33,6 @@ import net.runelite.client.config.ConfigItem;
 @ConfigGroup(ReorderPrayersPlugin.CONFIG_GROUP_KEY)
 public interface ReorderPrayersConfig extends Config
 {
-
 	@ConfigItem(
 		keyName = ReorderPrayersPlugin.CONFIG_UNLOCK_REORDERING_KEY,
 		name = "Unlock Prayer Reordering",
@@ -69,5 +69,4 @@ public interface ReorderPrayersConfig extends Config
 		description = ""
 	)
 	void prayerOrder(String prayerOrder);
-
 }

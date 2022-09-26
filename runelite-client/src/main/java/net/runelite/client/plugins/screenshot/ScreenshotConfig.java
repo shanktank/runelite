@@ -252,31 +252,6 @@ public interface ScreenshotConfig extends Config
 		return false;
 	}
 
-	// TODO: begin
-	@ConfigItem(
-			keyName = "mentions",
-			name = "Screenshot Mentions",
-			description = "Configures whether screenshots are taken when the player is mentioned in chat.",
-			position = 15
-	)
-	default boolean screenshotMentions()
-	{
-		return true;
-	}
-	// TODO: end
-
-	@ConfigItem(
-		keyName = "ccKick",
-		name = "Screenshot Kicks from FC",
-		description = "Take a screenshot when you kick a user from a friends chat.",
-		position = 17,
-		section = whatSection
-	)
-	default boolean screenshotKick()
-	{
-		return false;
-	}
-
 	@ConfigItem(
 		keyName = "baHighGamble",
 		name = "Screenshot BA high gambles",
@@ -323,4 +298,17 @@ public interface ScreenshotConfig extends Config
 	{
 		return false;
 	}
+
+	// TODO: begin
+	@ConfigItem(
+			keyName = "mentions",
+			name = "Screenshot Mentions",
+			description = "Configures whether screenshots are taken when the player is mentioned in chat.",
+			position = 22
+	)
+	default boolean screenshotMentions()
+	{
+		return true;
+	}
+	// TODO: end
 }

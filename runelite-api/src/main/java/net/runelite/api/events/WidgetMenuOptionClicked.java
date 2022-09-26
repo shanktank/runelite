@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Adam <Adam@sigterm.info>
+ * Copyright (c) 2017, Adam <Adam@sigterm.info>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,12 +22,34 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package net.runelite.api.events;
 
-package net.runelite.client.plugins.reorderprayers;
+import javax.annotation.Nullable;
+import lombok.Data;
+import net.runelite.api.widgets.WidgetInfo;
 
-public enum PrayerTabState
+/**
+ * A MenuManager widget menu was clicked. This event is fired only for MenuManager managed custom menus.
+ */
+@Data
+//@Deprecated
+public class WidgetMenuOptionClicked
 {
-	NONE,
-	PRAYERS,
-	QUICK_PRAYERS
+	/**
+	 * The clicked menu option.
+	 */
+	private String menuOption;
+	/**
+	 * The clicked menu target.
+	 */
+	private String menuTarget;
+	/**
+	 * The WidgetInfo of the widget that was clicked, if available.
+	 */
+	@Nullable
+	private WidgetInfo widget;
+	/**
+	 * The widget id of the widget that was clicked.
+	 */
+	private int widgetId;
 }
