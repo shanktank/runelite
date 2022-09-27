@@ -35,8 +35,11 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.HttpUrl;
+import org.slf4j.Logger;
 
+@Slf4j
 public class RuneLiteProperties
 {
 	private static final String RUNELITE_VERSION = "runelite.version";
@@ -127,23 +130,33 @@ public class RuneLiteProperties
 	}
 
 	public static String getLatestVersion() throws IOException {
+		// Open plugin repo site
 		Scanner urlScanner = new Scanner(new URL("https://repo.runelite.net/plugins/").openStream());
+
+		// Regex for to exclude strings that don't fit the version layout
 		Pattern versionRegex = Pattern.compile("(>)(.*)([\\d+\\.]*)(/)(.*)(<)");
+		// Datetime format to be used for comparisons
 		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy H:m");
 
 		String maxVersion = "";
 		long latestTime = 0;
 
+		// Scan the page until the end is reached
 		while(urlScanner.hasNext()) {
 			String line = urlScanner.next();
+			// Scan the next version and compare to our matcher
 			Matcher matcher = versionRegex.matcher(line);
 
+			// Skip links that don't lead to plugins, including the "previous directory" link
 			if(matcher.find() && !line.matches(".*\\.\\./?.*")) {
+				// Grab Date and Time, two separate columns, and conjoin them
 				String dateTime = urlScanner.next() + " " + urlScanner.next();
-				long epochTime;
 
 				try {
-					epochTime = dateFormat.parse(dateTime).getTime();
+					// Convert each valid parsed datetime into epoch time
+					// long epochTime;
+					long epochTime = dateFormat.parse(dateTime).getTime();
+					// Update maxVersion and latestEpoch if we've found a more recent version
 					if(epochTime > latestTime) {
 						latestTime = epochTime;
 						maxVersion = matcher.group(2);
@@ -154,7 +167,8 @@ public class RuneLiteProperties
 			}
 		}
 
-		System.out.println("\n!!! getLatestVersion(): " + maxVersion + " !!!\n");
+		System.out.println("\n!!! In getLatestVersion(): " + maxVersion + " !!!\n");
+		log.debug("\n!!! Post-getLatestVersion(): " + maxVersion + " !!!\n");
 
 		return maxVersion;
 	}
@@ -165,12 +179,19 @@ public class RuneLiteProperties
 		String version = properties.get(PLUGINHUB_BASE) + "/";
 		try {
 			version += getLatestVersion();
+			System.out.println("\ngetLatestVersion() success! Version: " + version + "\n");
+			log.debug("\ngetLatestVersion() success! Version: " + version + "\n");
 		} catch(IOException e) {
-			version += "1.8.32";
+			System.out.println("\ngetLatestVersion(): " + e + "\n");
+			log.debug("\ngetLatestVersion(): " + e + "\n");
+			version += "1.8.33.3";
 		}
-		System.out.println(version);
-		//return HttpUrl.get(version);
-		return HttpUrl.get(properties.get(PLUGINHUB_BASE) + "/1.8.32");
+
+		System.out.println("\n!!! Post-getLatestVersion(): " + version + " !!!\n");
+		log.debug("\n!!! Post-getLatestVersion(): " + version + " !!!\n");
+
+		return HttpUrl.get(version);
+		//return HttpUrl.get(properties.get(PLUGINHUB_BASE) + "/1.8.33.3");
 	}
 
 	public static String getApiBase()
