@@ -1570,7 +1570,7 @@ public interface Client extends OAuthApi, GameEngine
 	 *
 	 * @return the hint arrow type
 	 */
-	HintArrowType getHintArrowType();
+	@MagicConstant(valuesFromClass = HintArrowType.class) int getHintArrowType();
 
 	/**
 	 * Clears the current hint arrow.
@@ -1583,6 +1583,13 @@ public interface Client extends OAuthApi, GameEngine
 	 * @param point the location
 	 */
 	void setHintArrow(WorldPoint point);
+
+	/**
+	 * Sets the hint arrow to the passsed point
+	 *
+	 * @param point
+	 */
+	void setHintArrow(LocalPoint point);
 
 	/**
 	 * Sets a hint arrow to point to the passed player.
@@ -1844,23 +1851,25 @@ public interface Client extends OAuthApi, GameEngine
 	/**
 	 * Is a widget is in target mode?
 	 */
-	boolean getSpellSelected();
+	boolean isWidgetSelected();
 
 	/**
 	 * Sets if a widget is in target mode
 	 */
-	void setSpellSelected(boolean selected);
+	void setWidgetSelected(boolean selected);
 
 	/**
 	 * Get if an item is selected with "Use"
 	 * @return 1 if selected, else 0
 	 */
+	@Deprecated
 	int getSelectedItem();
 
 	/**
 	 * If an item is selected, this is the item index in the inventory.
 	 * @return
 	 */
+	@Deprecated
 	int getSelectedItemIndex();
 
 	/**
@@ -2037,4 +2046,28 @@ public interface Client extends OAuthApi, GameEngine
 	 * @return client ticks
 	 */
 	int getIdleTimeout();
+
+	/**
+	 * Get whether minimap zoom is enabled
+	 * @return
+	 */
+	boolean isMinimapZoom();
+
+	/**
+	 * Set whether minimap zoom is enabled
+	 * @param minimapZoom
+	 */
+	void setMinimapZoom(boolean minimapZoom);
+
+	/**
+	 * Gets the number of pixels per tile on the minimap. The default is 4.
+	 * @return
+	 */
+	double getMinimapZoom();
+
+	/**
+	 * Set the number of pixels per tile on the minimap. The default is 4.
+	 * @param zoom
+	 */
+	void setMinimapZoom(double zoom);
 }
