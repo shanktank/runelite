@@ -272,7 +272,18 @@ public interface PlayerIndicatorsConfig extends Config
 	}
 
 	@ConfigItem(
-			position = 15,
+		position = 16,
+		keyName = "disableOutsidePvP",
+		name = "Disable outside PvP",
+		description = "Disable the overlays outside of PvP areas"
+	)
+	default boolean disableOutsidePvP()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+			position = 17,
 			keyName = "drawOwnPlayerTiles",
 			name = "Draw tiles under own player",
 			description = "Configures whether or not tiles under own highlighted player should be drawn"

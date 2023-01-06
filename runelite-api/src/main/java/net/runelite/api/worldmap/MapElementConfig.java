@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Lotto <https://github.com/devLotto>
+ * Copyright (c) 2017, Adam <Adam@sigterm.info>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,9 +22,27 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.cluescrolls.clues;
+package net.runelite.api.worldmap;
 
-public interface TextClueScroll
+import net.runelite.api.SpritePixels;
+
+/**
+ * Represents configuration for a map element
+ */
+public interface MapElementConfig
 {
-	String getText();
+	/**
+	 * Gets the sprite icon to display on the world map.
+	 *
+	 * @param unused unused value
+	 * @return the sprite icon to display on the world map
+	 */
+	SpritePixels getMapIcon(boolean unused);
+
+	/**
+	 * Get the category of this icon type.
+	 *
+	 * @return
+	 */
+	int getCategory();
 }
