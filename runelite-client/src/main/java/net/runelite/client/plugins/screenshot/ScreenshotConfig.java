@@ -289,10 +289,10 @@ public interface ScreenshotConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "hotkey",
+    keyName = "hotkey",
 		name = "Screenshot hotkey",
 		description = "When you press this key a screenshot will be taken",
-		position = 21
+		position = 22
 	)
 	default boolean screenshotKick()
 	{
@@ -304,11 +304,23 @@ public interface ScreenshotConfig extends Config
 			keyName = "mentions",
 			name = "Screenshot Mentions",
 			description = "Configures whether screenshots are taken when the player is mentioned in chat.",
-			position = 22
+			position = 23
 	)
 	default boolean screenshotMentions()
 	{
 		return true;
 	}
 	// TODO: end
+
+	@ConfigItem(
+		keyName = "wildernessLootChest",
+		name = "Screenshot wilderness loot chest",
+		description = "Take a screenshot when opening wilderness loot chest",
+		position = 21,
+		section = whatSection
+	)
+	default boolean screenshotWildernessLootChest()
+	{
+		return true;
+	}
 }

@@ -7,7 +7,7 @@
   <description>Open source RuneScape client</description>
   <groupId>net.runelite</groupId>
   <artifactId>script-assembler-plugin</artifactId>
-  <version>1.8.34-SNAPSHOT</version>
+  <version>1.9.11-SNAPSHOT</version>
   <goalPrefix>script-assembler</goalPrefix>
   <mojos>
     <mojo>

@@ -66,11 +66,23 @@ public class PlayerIndicatorsTileOverlay extends Overlay
 			});
 		}
 
-		if(config.drawOwnTiles())
+//<<<<<<< HEAD
+        /*
+		uf(config.drawOwnTiles())
 		{
 			final Polygon poly = playerIndicatorsService.client.getLocalPlayer().getCanvasTilePoly();
 			if (poly != null) {
 				OverlayUtil.renderPolygon(graphics, poly, playerIndicatorsService.config.getOwnPlayerColor());
+        */
+//=======
+		playerIndicatorsService.forEachPlayer((player, decorations) ->
+		{
+			final Polygon poly = player.getCanvasTilePoly();
+
+			if (poly != null)
+			{
+				OverlayUtil.renderPolygon(graphics, poly, decorations.getColor());
+//>>>>>>> 076fac1e7ba451a5e7923177d788acaaf8e750d9
 			}
 		}
 

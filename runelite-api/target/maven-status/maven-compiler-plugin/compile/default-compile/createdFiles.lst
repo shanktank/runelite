@@ -28,6 +28,7 @@ net\runelite\api\NodeCache.class
 net\runelite\api\widgets\WidgetID$GauntletTimer.class
 net\runelite\api\events\GraphicsObjectCreated.class
 net\runelite\api\widgets\WidgetID$SettingsSide.class
+net\runelite\api\worldmap\WorldMapIcon.class
 net\runelite\api\KeyCode.class
 net\runelite\api\widgets\WidgetID$Minigames.class
 net\runelite\api\coords\WorldArea.class
@@ -61,6 +62,7 @@ net\runelite\api\widgets\WidgetID$WorldMap.class
 com\jagex\oldscape\pub\OAuthApi.class
 net\runelite\api\Player.class
 net\runelite\api\events\DecorativeObjectDespawned.class
+net\runelite\api\events\PostMenuSort.class
 net\runelite\api\CollisionDataFlag.class
 net\runelite\api\events\ScriptCallbackEvent.class
 net\runelite\api\widgets\WidgetID$Barrows.class
@@ -81,6 +83,8 @@ net\runelite\api\Item.class
 net\runelite\api\HealthBar.class
 net\runelite\api\widgets\WidgetID$DialogSprite.class
 net\runelite\api\widgets\WidgetID$KillLog.class
+net\runelite\api\TileFunction.class
+net\runelite\api\AABB.class
 net\runelite\api\GraphicID.class
 net\runelite\api\events\ChatMessage.class
 net\runelite\api\clan\ClanRank.class
@@ -126,12 +130,14 @@ net\runelite\api\SceneTileModel.class
 net\runelite\api\events\AccountHashChanged.class
 net\runelite\api\JagexColor.class
 net\runelite\api\widgets\WidgetModalMode.class
+net\runelite\api\events\PostClientTick.class
 net\runelite\api\DecorativeObject.class
 net\runelite\api\annotations\VisibleForExternalPlugins.class
 net\runelite\api\events\FriendsChatMemberLeft.class
 net\runelite\api\widgets\Widget.class
 net\runelite\api\events\NameableNameChanged.class
 net\runelite\api\widgets\WidgetID$DestroyItem.class
+net\runelite\api\worldmap\WorldMapRenderer.class
 net\runelite\api\widgets\WidgetID$Skills.class
 net\runelite\api\NameableContainer.class
 net\runelite\api\widgets\WidgetID$LightBox.class
@@ -156,6 +162,7 @@ net\runelite\api\vars\InputType.class
 net\runelite\api\Constants.class
 net\runelite\api\widgets\WidgetID$ResizableViewportBottomLine.class
 net\runelite\api\Point.class
+net\runelite\api\worldmap\WorldMap.class
 net\runelite\api\widgets\WidgetModelType.class
 net\runelite\api\SoundEffectVolume.class
 net\runelite\api\widgets\WidgetID$BarbarianAssault.class
@@ -176,6 +183,7 @@ net\runelite\api\Preferences.class
 net\runelite\api\GrandExchangeOfferState.class
 net\runelite\api\widgets\WidgetID$GuidePrices.class
 net\runelite\api\HeadIcon.class
+net\runelite\api\worldmap\WorldMapRegion.class
 net\runelite\api\SpriteID.class
 net\runelite\api\IconID.class
 net\runelite\api\widgets\WidgetID$ClanGuest.class
@@ -215,10 +223,12 @@ net\runelite\api\Skill.class
 net\runelite\api\Nameable.class
 net\runelite\api\Animation.class
 net\runelite\api\ScriptID.class
+net\runelite\api\worldmap\MapElementConfig.class
 net\runelite\api\NullItemID.class
 net\runelite\api\widgets\WidgetID$Cluescroll.class
 net\runelite\api\events\PostItemComposition.class
 net\runelite\api\NPCComposition.class
+net\runelite\api\worldmap\WorldMapData.class
 net\runelite\api\FontTypeFace.class
 net\runelite\api\geometry\SimplePolygon$TransformIterator.class
 net\runelite\api\TileItem.class
@@ -249,7 +259,6 @@ net\runelite\api\widgets\WidgetID$VolcanicMine.class
 net\runelite\api\widgets\WidgetID$Settings.class
 net\runelite\api\widgets\WidgetID$ExperienceTracker.class
 net\runelite\api\events\HitsplatApplied.class
-net\runelite\api\MapElementConfig.class
 net\runelite\api\widgets\WidgetID$FairyRing.class
 net\runelite\api\InstanceTemplates.class
 net\runelite\api\widgets\WidgetID$Shop.class
@@ -263,6 +272,7 @@ net\runelite\api\clan\ClanChannel.class
 net\runelite\api\geometry\Geometry.class
 net\runelite\api\events\PlayerChanged.class
 net\runelite\api\WidgetNode.class
+net\runelite\api\Rasterizer.class
 net\runelite\api\Script.class
 net\runelite\api\events\VolumeChanged.class
 net\runelite\api\Scene.class
@@ -281,7 +291,6 @@ net\runelite\api\events\NpcDespawned.class
 net\runelite\api\InventoryID.class
 net\runelite\api\coords\WorldPoint.class
 net\runelite\api\events\ItemContainerChanged.class
-net\runelite\api\KeyFocusListener.class
 net\runelite\api\widgets\WidgetID$BarbarianAssault$ATK.class
 net\runelite\api\widgets\WidgetType.class
 net\runelite\api\events\FakeXpDrop.class
@@ -305,7 +314,6 @@ net\runelite\api\events\GameObjectDespawned.class
 net\runelite\api\widgets\WidgetID$LootingBag.class
 net\runelite\api\Hitsplat.class
 net\runelite\api\GameObject.class
-net\runelite\api\WorldMapManager.class
 net\runelite\api\IterableHashTable.class
 net\runelite\api\clan\ClanID.class
 net\runelite\api\StructComposition.class

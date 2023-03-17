@@ -33,7 +33,6 @@ net\runelite\client\plugins\config\PluginSearchTest.class
 net\runelite\client\plugins\cluescrolls\clues\hotcold\HotColdTemperatureChangeTest.class
 net\runelite\client\plugins\timers\TimersPluginTest.class
 net\runelite\client\util\QuantityFormatterTest.class
-net\runelite\client\hiscore\HiscoreClientTest.class
 net\runelite\client\plugins\emojis\EmojiPluginTest.class
 net\runelite\client\plugins\prayer\PrayerPluginTest.class
 net\runelite\client\ui\overlay\components\TooltipComponentTest.class
@@ -42,6 +41,7 @@ net\runelite\client\plugins\cluescrolls\clues\hotcold\MasterHotColdLocationTest.
 net\runelite\client\ui\overlay\infobox\InfoBoxManagerTest.class
 net\runelite\client\plugins\timestamp\TimestampPluginTest.class
 net\runelite\client\plugins\woodcutting\WoodcuttingPluginTest.class
+net\runelite\client\plugins\cluescrolls\clues\ConfigKeyTest.class
 net\runelite\client\plugins\attackstyles\AttackStylesPluginTest.class
 net\runelite\client\game\ItemVariationMappingTest$1.class
 net\runelite\client\plugins\worldmap\TeleportLocationDataTest.class
@@ -94,6 +94,8 @@ net\runelite\client\plugins\hiscore\HiscorePanelTest.class
 net\runelite\client\plugins\itemstats\ItemStatEffectTest.class
 net\runelite\client\plugins\screenshot\ScreenshotPluginTest.class
 net\runelite\client\plugins\cluescrolls\clues\hotcold\HotColdSolverTest.class
+net\runelite\client\plugins\attackstyles\WeaponTypeTest.class
+net\runelite\client\game\ItemMappingTest.class
 net\runelite\client\plugins\xptracker\XpTrackerPluginTest.class
 net\runelite\client\util\ImageUtilTest.class
 net\runelite\client\plugins\twitch\irc\MessageTest.class
@@ -104,6 +106,7 @@ net\runelite\client\plugins\raids\RaidsPluginTest.class
 net\runelite\client\plugins\grandexchange\GrandExchangePluginTest.class
 net\runelite\client\plugins\puzzlesolver\PuzzleSolverTest.class
 net\runelite\client\plugins\grounditems\GroundItemsPluginTest.class
+net\runelite\client\plugins\bosstimer\BossTimersPluginTest.class
 net\runelite\client\plugins\raids\RotationSolverTest.class
 net\runelite\client\rs\ClientConfigLoaderTest.class
 net\runelite\client\plugins\chatchannel\ChatChannelPluginTest.class

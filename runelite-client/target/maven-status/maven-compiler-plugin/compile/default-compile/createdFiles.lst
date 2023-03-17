@@ -22,7 +22,6 @@ net\runelite\client\game\ItemManager$ImageKey.class
 net\runelite\client\ui\components\colorpicker\ColorValuePanel$2.class
 net\runelite\client\plugins\interfacestyles\InterfaceStylesConfig.class
 net\runelite\client\ui\overlay\OverlayRenderer.class
-net\runelite\client\chat\CommandManager$2.class
 net\runelite\client\ui\components\colorpicker\RecentColors$1.class
 net\runelite\client\plugins\xptracker\XpPauseState.class
 net\runelite\client\party\WSClient$1.class
@@ -31,6 +30,7 @@ net\runelite\client\plugins\timetracking\farming\CompostTracker$1.class
 net\runelite\client\plugins\hiscore\HiscoreConfig.class
 net\runelite\client\plugins\wintertodt\WintertodtActivity.class
 net\runelite\client\ui\components\ComboBoxListRenderer.class
+net\runelite\client\hiscore\HiscoreResponse.class
 net\runelite\client\config\ConfigSection.class
 net\runelite\client\plugins\timetracking\farming\PatchState$1.class
 net\runelite\client\plugins\zalcano\ZalcanoOverlay.class
@@ -193,6 +193,7 @@ net\runelite\client\party\WSClient.class
 net\runelite\client\plugins\itemstats\potions\MixedPotion.class
 net\runelite\client\ui\components\DimmableJPanel.class
 net\runelite\client\chat\ChatCommand.class
+net\runelite\client\plugins\worldhopper\WorldTypeFilter$4.class
 net\runelite\client\plugins\experiencedrop\XpPrayer.class
 net\runelite\client\plugins\chathistory\ChatHistoryConfig.class
 net\runelite\client\ui\overlay\components\ImageComponent.class
@@ -205,6 +206,7 @@ net\runelite\client\ui\overlay\RenderableEntity.class
 net\runelite\client\ui\overlay\infobox\InfoBox.class
 net\runelite\client\ui\overlay\worldmap\WorldMapPoint$1.class
 net\runelite\client\plugins\blastfurnace\BlastFurnaceConfig.class
+net\runelite\client\plugins\worldhopper\WorldTypeFilter$2.class
 net\runelite\client\plugins\herbiboars\TrailToSpot.class
 net\runelite\client\plugins\devtools\DevToolsPanel$1.class
 net\runelite\client\plugins\lowmemory\LowMemoryConfig.class
@@ -303,7 +305,6 @@ net\runelite\client\plugins\screenmarkers\ui\ScreenMarkerPanel$8.class
 net\runelite\client\plugins\tithefarm\TitheFarmPluginConfig.class
 net\runelite\client\plugins\skillcalculator\skills\MiningAction$3.class
 net\runelite\client\discord\events\DiscordJoinRequest.class
-net\runelite\client\chat\ChatboxInputListener.class
 net\runelite\client\plugins\objectindicators\ObjectPoint.class
 net\runelite\client\plugins\Plugin.class
 net\runelite\client\plugins\reportbutton\ReportButtonPlugin$1.class
@@ -370,6 +371,7 @@ net\runelite\client\game\ItemManager$OutlineKey.class
 net\runelite\client\plugins\xptracker\XpPauseStateSingle.class
 net\runelite\client\plugins\raids\Raid.class
 net\runelite\client\plugins\worldmap\WorldMapPlugin$1.class
+net\runelite\client\events\ConfigSync.class
 net\runelite\client\plugins\agility\AgilitySession.class
 net\runelite\client\util\ReflectUtil.class
 net\runelite\client\ui\SplashScreen$1.class
@@ -424,6 +426,7 @@ net\runelite\client\plugins\party\data\PartyTilePingData.class
 net\runelite\client\plugins\PluginDescriptor.class
 net\runelite\client\plugins\devtools\ScriptInspector$1.class
 net\runelite\client\plugins\timetracking\farming\FarmingTabPanel$1.class
+net\runelite\client\plugins\worldhopper\WorldTypeFilter$1.class
 net\runelite\client\plugins\config\PluginListPanel.class
 net\runelite\client\rs\ClientLoader.class
 net\runelite\client\plugins\puzzlesolver\solver\heuristics\ManhattanDistance.class
@@ -494,6 +497,7 @@ net\runelite\client\plugins\groundmarkers\GroundMarkerSharingManager$1.class
 net\runelite\client\plugins\timetracking\hunter\BirdHouseData.class
 net\runelite\client\plugins\xpglobes\XpGlobe.class
 net\runelite\client\plugins\experiencedrop\PrayerType.class
+net\runelite\client\plugins\worldhopper\WorldTypeFilter$5.class
 net\runelite\client\plugins\cluescrolls\clues\LocationsClueScroll.class
 net\runelite\client\plugins\worldhopper\WorldTableHeader$1.class
 net\runelite\client\plugins\animsmoothing\AnimationSmoothingPlugin.class
@@ -552,6 +556,7 @@ net\runelite\client\plugins\motherlode\MotherlodeOreOverlay.class
 net\runelite\client\plugins\logouttimer\LogoutTimerConfig.class
 net\runelite\client\plugins\menuentryswapper\MenuEntrySwapperConfig$RadasBlessingMode.class
 net\runelite\client\util\OSXUtil.class
+net\runelite\client\plugins\worldhopper\WorldTypeFilter$6.class
 net\runelite\client\plugins\achievementdiary\CombatLevelRequirement.class
 net\runelite\client\ui\overlay\outline\ModelOutlineRenderer$PixelDistanceGroupIndex.class
 net\runelite\client\plugins\menuentryswapper\MenuEntrySwapperConfig$1.class
@@ -562,6 +567,7 @@ net\runelite\client\plugins\worldhopper\WorldTableRow$2.class
 net\runelite\client\plugins\feed\FeedConfig.class
 net\runelite\client\plugins\blastmine\BlastMineOreCountOverlay.class
 net\runelite\client\plugins\pestcontrol\PestControlOverlay.class
+net\runelite\client\plugins\worldhopper\WorldTypeFilter.class
 net\runelite\client\plugins\kourendlibrary\KourendLibraryTutorialOverlay.class
 net\runelite\client\chat\ChatMessageManager.class
 net\runelite\client\plugins\worldhopper\WorldTableRow$1.class
@@ -577,7 +583,6 @@ net\runelite\client\plugins\skillcalculator\skills\RunecraftBonus.class
 net\runelite\client\plugins\cluescrolls\clues\hotcold\HotColdArea.class
 net\runelite\client\plugins\gpu\config\ColorBlindMode.class
 net\runelite\client\plugins\PluginClassLoader.class
-net\runelite\client\plugins\itemstats\potions\GauntletPotion.class
 net\runelite\client\plugins\worldhopper\RegionFilterMode$3.class
 net\runelite\client\plugins\regenmeter\RegenMeterConfig.class
 net\runelite\client\plugins\worldmap\TeleportLocationData.class
@@ -590,6 +595,7 @@ net\runelite\client\plugins\fishing\FishingSpotOverlay.class
 net\runelite\client\ui\overlay\components\TitleComponent.class
 net\runelite\client\plugins\mta\alchemy\Cupboard.class
 net\runelite\client\plugins\kourendlibrary\BookPanel.class
+net\runelite\client\plugins\worldhopper\WorldTypeFilter$7.class
 net\runelite\client\plugins\menuentryswapper\SellMode.class
 net\runelite\client\plugins\timetracking\clocks\ClockManager$1.class
 net\runelite\client\events\NotificationFired.class
@@ -671,7 +677,6 @@ net\runelite\client\plugins\itemstats\Positivity$1.class
 net\runelite\client\plugins\bank\BankPlugin$1.class
 net\runelite\client\plugins\xptracker\XpTrackerConfig.class
 net\runelite\client\plugins\xptracker\XpInfoBoxOverlay.class
-net\runelite\client\plugins\worldmap\QuestStartLocation.class
 net\runelite\client\plugins\screenmarkers\ui\ScreenMarkerCreationPanel$1.class
 net\runelite\client\SessionClient.class
 net\runelite\client\plugins\skillcalculator\skills\FishingBonus.class
@@ -713,6 +718,7 @@ net\runelite\client\plugins\skillcalculator\skills\HunterAction.class
 net\runelite\client\TelemetryClient$2.class
 net\runelite\client\plugins\screenmarkers\ui\ScreenMarkerCreationPanel$2.class
 net\runelite\client\plugins\slayer\SlayerOverlay.class
+net\runelite\client\hiscore\HiscoreResponse$Activity.class
 net\runelite\client\plugins\timetracking\OverviewTabPanel.class
 net\runelite\client\plugins\groundmarkers\GroundMarkerConfig.class
 net\runelite\client\plugins\itemstats\ItemStatChanges.class
@@ -785,6 +791,7 @@ net\runelite\client\plugins\interacthighlight\InteractHighlightOverlay.class
 net\runelite\client\ui\overlay\components\SplitComponent.class
 net\runelite\client\plugins\herbiboars\HerbiboarSearchSpot.class
 net\runelite\client\plugins\itemcharges\ItemChargePlugin.class
+net\runelite\client\plugins\xtea\XteaPlugin$2.class
 net\runelite\client\ui\components\IconTextField$5.class
 net\runelite\client\plugins\twitch\irc\TwitchListener.class
 net\runelite\client\plugins\timetracking\clocks\ClockPanel.class
@@ -850,10 +857,10 @@ net\runelite\client\RuntimeConfig.class
 net\runelite\client\plugins\hiscore\HiscorePanel.class
 net\runelite\client\plugins\runecraft\RunecraftPlugin.class
 net\runelite\client\plugins\timetracking\farming\PatchImplementation$13.class
-net\runelite\client\hiscore\HiscoreClient$2.class
 net\runelite\client\plugins\woodcutting\Tree.class
 net\runelite\client\ui\ContainableFrame.class
 net\runelite\client\plugins\tearsofguthix\TearsOfGuthixPlugin$1.class
+net\runelite\client\hiscore\HiscoreResponse$Skill.class
 net\runelite\client\plugins\itemstats\stats\Stat.class
 net\runelite\client\plugins\skillcalculator\skills\SmithingAction.class
 net\runelite\client\plugins\timetracking\farming\CompostTracker$PendingCompost.class
@@ -935,10 +942,10 @@ net\runelite\client\plugins\itemprices\ItemPricesConfig.class
 net\runelite\client\plugins\chatchannel\ChatChannelPlugin.class
 net\runelite\client\plugins\crowdsourcing\woodcutting\CrowdsourcingWoodcutting.class
 net\runelite\client\plugins\customcursor\CustomCursorPlugin.class
-net\runelite\client\plugins\feed\FeedPlugin$1.class
 net\runelite\client\plugins\cluescrolls\ClueScrollService.class
 net\runelite\client\plugins\worldhopper\ping\RLLibC.class
 net\runelite\client\plugins\prayer\PrayerConfig.class
+net\runelite\client\plugins\worldhopper\WorldTypeFilter$3.class
 net\runelite\client\plugins\instancemap\InstanceMapOverlay.class
 net\runelite\client\plugins\itemidentification\ItemIdentificationOverlay$1.class
 net\runelite\client\plugins\skillcalculator\UIActionSlot.class
@@ -1048,7 +1055,6 @@ net\runelite\client\events\ExternalPluginsChanged.class
 net\runelite\client\plugins\dpscounter\DpsMember.class
 net\runelite\client\plugins\achievementdiary\OrRequirement.class
 net\runelite\client\rs\RSConfig.class
-net\runelite\client\chat\CommandManager$1.class
 net\runelite\client\plugins\cooking\CookingConfig.class
 net\runelite\client\plugins\notes\NotesConfig.class
 net\runelite\client\plugins\camera\ControlFunction.class
@@ -1192,7 +1198,6 @@ net\runelite\client\party\Party$Data$Builder.class
 net\runelite\client\plugins\tileindicators\TileIndicatorsOverlay.class
 net\runelite\client\party\Party$Part.class
 net\runelite\client\rs\ClientLoader$1.class
-net\runelite\client\chat\CommandManager.class
 net\runelite\client\hiscore\HiscoreManager$HiscoreKey.class
 net\runelite\client\plugins\tileindicators\TileIndicatorsConfig.class
 net\runelite\client\plugins\worldhopper\ping\IPHlpAPI.class
@@ -1382,6 +1387,7 @@ net\runelite\client\plugins\timetracking\farming\FarmingWorld$5.class
 net\runelite\client\plugins\itemstats\Builders.class
 net\runelite\client\chat\ChatClient.class
 net\runelite\client\ui\ClientUI$6.class
+net\runelite\client\game\AgilityShortcut$2.class
 net\runelite\client\plugins\boosts\CompactBoostsOverlay.class
 net\runelite\client\plugins\timetracking\clocks\ClockTabPanel.class
 net\runelite\client\plugins\mta\MTAItemOverlay.class
@@ -1401,6 +1407,7 @@ net\runelite\client\plugins\loottracker\LootTrackerConfig.class
 net\runelite\client\plugins\playerindicators\PlayerIndicatorsOverlay$1.class
 net\runelite\client\plugins\timetracking\farming\PatchImplementation$2.class
 net\runelite\client\plugins\specialcounter\PlayerInfoDrop$Builder.class
+net\runelite\client\chat\ChatInputManager.class
 net\runelite\client\plugins\slayer\TargetWeaknessOverlay.class
 net\runelite\client\plugins\config\HotkeyButton.class
 net\runelite\client\plugins\metronome\MetronomePluginConfiguration.class
@@ -1420,6 +1427,7 @@ net\runelite\client\plugins\dpscounter\DpsUpdate.class
 net\runelite\client\plugins\skybox\Skybox$ChunkMapper.class
 net\runelite\client\config\ConfigItem.class
 net\runelite\client\plugins\agility\Courses.class
+net\runelite\client\plugins\xtea\XteaPlugin$1.class
 net\runelite\client\plugins\devtools\LocationOverlay.class
 net\runelite\client\plugins\tithefarm\TitheFarmPlantState.class
 net\runelite\client\util\DeduplicationFilter$LogException.class
@@ -1438,7 +1446,6 @@ net\runelite\client\plugins\chatfilter\ChatFilterPlugin$1.class
 net\runelite\client\plugins\mousehighlight\MouseHighlightOverlay.class
 net\runelite\client\plugins\discord\DiscordPlugin$1.class
 net\runelite\client\plugins\devtools\DevToolsButton.class
-net\runelite\client\plugins\cluescrolls\clues\TextClueScroll.class
 net\runelite\client\plugins\raids\RoomType.class
 net\runelite\client\rs\RSAppletStub$1.class
 net\runelite\client\config\ConfigClient$2.class
@@ -1549,6 +1556,7 @@ net\runelite\client\events\InfoBoxMenuClicked.class
 net\runelite\client\plugins\puzzlesolver\solver\pathfinding\Pathfinder.class
 net\runelite\client\plugins\timetracking\farming\PatchImplementation$3.class
 net\runelite\client\ui\overlay\WidgetOverlay$XpTrackerWidgetOverlay.class
+net\runelite\client\plugins\itemstats\potions\Ambrosia.class
 net\runelite\client\util\VerificationException.class
 net\runelite\client\util\DeduplicationFilter.class
 net\runelite\client\plugins\fps\FpsDrawListener.class
